@@ -22,23 +22,35 @@ Allay Wormhole is a Discord bot that allow the connect textual channels together
 
 Allay Wormhole, such as other Allay projects, is free and open-source. It is written in Python and uses the Discord.py library and is managed by the [Gunivers](https://gunivers.net) community.
 
-```{button-link} getting_started.html
+::::{grid} 2
+
+:::{grid-item}
+
+```{button-link} #
 :color: primary
-:align: center
+:align: right
 :shadow:
 
-🚀 Connect your channels!
+👋 Invite Allay Wormhole (soon)
 ```
+
+:::
+:::{grid-item}
+
+```{button-link} getting_started.html
+:color: primary
+:align: left
+:outline:
+
+🚀 Start connecting channels!
+```
+
+:::
+::::
 
 ## 🏃 Motivation
 
 Many discord communities either have multiple server, either would like to have more interaction with other friendly communities. However, Discord doesn't provide any way to connect channels between servers. This is where Allay Wormhole comes in!
-
-## 📦 Current Allay Bots
-
-```{include} plugins_grid.md
-```
-
 
 ## 🤝 Follow and/or contribute
 
