@@ -2,6 +2,8 @@
 html_theme.sidebar_secondary.remove: true
 ---
 
+# 🚀 User guide
+
 > Coming soon
 
 ```{admonition} 🤝 Help us building this project!
