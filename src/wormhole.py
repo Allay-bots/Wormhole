@@ -6,7 +6,7 @@ de la licence CeCILL diffusée sur le site "http://www.cecill.info".
 """
 
 #==============================================================================
-# Import requirements
+# Requirements
 #==============================================================================
 
 # Standard libs ---------------------------------------------------------------
@@ -23,8 +23,11 @@ from LRFutils import logs
 
 # Project modules -------------------------------------------------------------
 
-from allay.core.src.discord import Bot, Context, checks
+import allay
 
+#==============================================================================
+# Plugin
+#==============================================================================
 
 def similar(msg1: str, msg2: str):
     "Check if a message is similar to another one with 80% similarity"
@@ -124,12 +127,9 @@ class PermissionType(commands.Converter):
 
 class Wormhole:
     "Represents a wormhole into the 'wormhole_list' table"
-    def __init__(
-        self, name: str, privacy: bool, webhook_name: str, use_guild_icon: bool, owners: list[int],
-        bot: Bot, channels_count: int
-    ):
-        self.bot = bot
+    def __init__(self, name: str, privacy: bool, webhook_name: str, use_guild_icon: bool, owners: list[int], bot:allay.Bot, channels_count: int):
         self.name = name
+        self.bot = bot
         self.privacy = privacy
         self.webhook_name = webhook_name
         self.use_guild_icon = use_guild_icon
@@ -176,7 +176,7 @@ class WormholeChannel:
 class Wormholes(commands.Cog):
     "Wormhole management commands"
 
-    def __init__(self, bot: Bot):
+    def __init__(self, bot):
         self.bot = bot
         self.file = "wormhole"
 
@@ -540,7 +540,7 @@ class Wormholes(commands.Cog):
     @commands.group(name="wormhole", aliases=["wh"])
     @commands.guild_only()
     @commands.cooldown(2, 15, commands.BucketType.channel)
-    async def wormhole(self, ctx: Context):
+    async def wormhole(self, ctx: allay.Context):
         """Connect 2 points through space-time (or 2 text channels if you prefer)"""
         if ctx.subcommand_passed is None:
             await ctx.send_help("wormhole")
@@ -548,7 +548,7 @@ class Wormholes(commands.Cog):
     @wormhole.command(name="add")
     async def add(
         self,
-        ctx: Context,
+        ctx: allay.Context,
         name: str,
         privacy: bool = True,
         webhook_name: str = "{user}",
@@ -581,10 +581,10 @@ class Wormholes(commands.Cog):
         )
 
     @wormhole.command(name="link")
-    @commands.check(checks.is_server_manager)
+    @commands.check(allay.checks.is_server_manager)
     async def link(
         self,
-        ctx: Context,
+        ctx: allay.Context,
         wormhole: str,
         perms: PermissionType = PermissionType("wr"),
     ):
@@ -640,8 +640,8 @@ class Wormholes(commands.Cog):
             )
 
     @wormhole.command(name="unlink")
-    @commands.check(checks.is_server_manager)
-    async def unlink(self, ctx: Context):
+    @commands.check(allay.checks.is_server_manager)
+    async def unlink(self, ctx: allay.Context):
         """Unlink the current channel to a wormhole"""
         query = "SELECT * FROM wormhole_channel WHERE channelID = ?"
         wh_channel = self.bot.db_query(
@@ -663,7 +663,7 @@ class Wormholes(commands.Cog):
         )
 
     @wormhole.command(name="remove", aliases=["delete"])
-    async def remove(self, ctx: Context, wormhole: str):
+    async def remove(self, ctx: allay.Context, wormhole: str):
         """Delete a wormhole"""
         if not self.db_check_wh_exists(wormhole):
             await ctx.send(
@@ -686,13 +686,13 @@ class Wormholes(commands.Cog):
         )
 
     @wormhole.group(name="modify", aliases=["edit"])
-    async def modify(self, ctx: Context):
+    async def modify(self, ctx: allay.Context):
         """Edit a wormhole"""
         if ctx.subcommand_passed is None:
             await ctx.send_help("wormhole modify")
 
     @modify.command(name="privacy")
-    async def modify_privacy(self, ctx: Context, wormhole: str, privacy: str):
+    async def modify_privacy(self, ctx: allay.Context, wormhole: str, privacy: str):
         """Edit the privacy of a wormhole
         Options for privacy are "public" and "private" """
         if privacy.lower() not in ["public", "private"]:
@@ -714,7 +714,7 @@ class Wormholes(commands.Cog):
 
     @modify.command(name="webhook_name")
     async def modify_webhook_name(
-        self, ctx: Context, wormhole: str, *, webhook_name: str
+        self, ctx: allay.Context, wormhole: str, *, webhook_name: str
     ):
         """
         Edit the name of the wormhole's webhook. Available variables:
@@ -743,7 +743,7 @@ class Wormholes(commands.Cog):
         await ctx.send(await self.bot._(ctx.guild.id, "wormhole.success.modified"))
 
     @modify.command(name="webhook_pp")
-    async def modify_webhook_pp(self, ctx: Context, wormhole: str, webhook_pp: bool):
+    async def modify_webhook_pp(self, ctx: allay.Context, wormhole: str, webhook_pp: bool):
         """webhook_pp_guild is for which avatar will be the profile picture of the webhook
         if True it will be the Guild from where it comes
         and if False it will be the User who sent the message"""
@@ -762,13 +762,13 @@ class Wormholes(commands.Cog):
         await ctx.send(await self.bot._(ctx.guild.id, "wormhole.success.modified"))
 
     @wormhole.group(name="admin")
-    async def admin(self, ctx: Context):
+    async def admin(self, ctx: allay.Context):
         """Add or remove Wormhole Admins"""
         if ctx.subcommand_passed is None:
             await ctx.send_help("wormhole admin")
 
     @admin.command(name="add")
-    async def admin_add(self, ctx: Context, wormhole: str, user: discord.User):
+    async def admin_add(self, ctx: allay.Context, wormhole: str, user: discord.User):
         """Add a user as a wormhole admin"""
         if not self.db_check_wh_exists(wormhole):
             await ctx.send(
@@ -796,7 +796,7 @@ class Wormholes(commands.Cog):
             )
 
     @admin.command(name="remove", aliases=["revoke"])
-    async def admin_remove(self, ctx: Context, wormhole: str, user: discord.User):
+    async def admin_remove(self, ctx: allay.Context, wormhole: str, user: discord.User):
         """Revoke an admin of a wormhole"""
         if not self.db_check_wh_exists(wormhole):
             await ctx.send(
@@ -824,13 +824,13 @@ class Wormholes(commands.Cog):
             )
 
     @wormhole.group(name="list")
-    async def list(self, ctx: Context):
+    async def list(self, ctx: allay.Context):
         """Get a list of available wormholes or channels"""
         if ctx.subcommand_passed is None:
             await ctx.send_help("wormhole list")
 
     @list.command(name="wormholes", aliases=["wh"])
-    async def list_wh(self, ctx: Context):
+    async def list_wh(self, ctx: allay.Context):
         """List all wormholes"""
         wormholes = self.db_get_wormholes()
         if not wormholes:  # we can't send an empty list
@@ -844,7 +844,7 @@ class Wormholes(commands.Cog):
         await ctx.send(txt)
 
     @list.command(name="channels")
-    async def list_channel(self, ctx: Context):
+    async def list_channel(self, ctx: allay.Context):
         """List all channels linked to a Wormhole in the current server"""
         channels = self.db_get_wh_channels_in_guild(ctx.guild.id)
         if not channels:  # we can't send an empty list
