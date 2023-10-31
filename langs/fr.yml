@@ -17,7 +17,7 @@ fr:
       not-privacy: L'option de visibilité doit être définie sur "public" ou "private"
       already-admin: "%{user} est déjà administrateur de ce trou de ver"
       notadmin: "%{user} n'est pas administrateur de ce trou de ver"
-      no-wormhole: "Il n'y a aucun trou de ver pour le moment. Créez en un avec la commande `%{p}wormhole add`"
+      no-wormhole: "Tu n'as aucun trou de ver pour le moment..."
       no-channel: "Il n'y a aucun salon lié à ce trou de ver pour le moment. Liez en un avec la commande `%{p}wormhole link`"
       too-many-wormholes: "Attends, non, tu as déjà 5 trou de ver 🤯\nCa devrait être suffisant..."
       target-has-too-many-wormholes: "Désolé, mais %{user} a déjà 5 trous de ver.."

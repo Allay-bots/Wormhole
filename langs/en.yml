@@ -17,7 +17,7 @@ en:
       not-privacy: Privacy option has to be "public" or "private"
       already-admin: "%{user} is already an admin"
       notadmin: "%{user} is not an admin"
-      no-wormhole: "There is no wormhole for now. Create on with %{p}wormhole add"
+      no-wormhole: "You don't have any wormhole yet..."
       no-channel: "There is no channel linked for now. Link on with %{p}wormhole link"
       too-many-wormholes: "Wait, no, you already have 5 wormholes 🤯\nIt should be enough..."
       target-has-too-many-wormholes: "Sorry, but %{user} already have 5 wormholes..."
