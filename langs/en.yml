@@ -5,24 +5,29 @@
 
 en:
   wormhole:
+    list:
+      user: "Here is all the wormholes you have access:"
+      guild: "Here is all the wormholes connected to this server"
     error:
       already-exists: "A wormhole with the name %{name} already exists"
       already-linked: "The channel %{c} is already linked to a wormhole"
       not-exists: "The wormhole %{name} does not exist"
       not-linked: "The channel %{c} is not linked to any wormhole"
-      not-admin: "You have to be an admin of this wormhole"
+      not-admin: "You have to be an admin of this wormhole 🛑"
       not-privacy: Privacy option has to be "public" or "private"
       already-admin: "%{user} is already an admin"
       notadmin: "%{user} is not an admin"
       no-wormhole: "There is no wormhole for now. Create on with %{p}wormhole add"
       no-channel: "There is no channel linked for now. Link on with %{p}wormhole link"
+      too-many-wormholes: "Wait, no, you already have 5 wormholes 🤯\nIt should be enough..."
+      target-has-too-many-wormholes: "Sorry, but %{user} already have 5 wormholes..."
     success:
-      wormhole-created: "Wormhole successfully created"
+      wormhole-created: "Wormhole successfully created! 🌀\nNext step: connect it to a channel with `/wormhole-link`"
       channel-linked: "Channel successfully linked"
       wormhole-deleted: "Wormhole successfully deleted"
       channel-unlinked: "Channel successfully unlinked"
       modified: "Modification successfully done"
-      admin-added: "Admin successfully added"
+      admin-added: "%{user} is now admin of the wormhole \"%{wormhole}\""
       admin-removed: "Admin successfully removed"
     reply_to: "In reply to [this message](%{link})"
     reply_notfound: "In reply to... a message that have been edited or deleted."

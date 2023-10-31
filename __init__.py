@@ -30,4 +30,4 @@ name = "Wormhole"
 
 async def setup(bot:allay.Bot):
     logs.info(f"Loading {icon} {name} v{version}...")
-    await bot.add_cog(Wormholes(bot), icon=icon, display_name=name)
+    await bot.add_cog(Wormhole(bot), icon=icon, display_name=name)

@@ -3,26 +3,27 @@
 -- utiliser, modifier et/ou redistribuer ce programme sous les conditions
 -- de la licence CeCILL diffusée sur le site "http://www.cecill.info".
 
-CREATE TABLE IF NOT EXISTS `wormhole_list` (
-  `name` TEXT PRIMARY KEY NOT NULL,
-  `privacy` BOOLEAN NOT NULL DEFAULT 0,
-  `webhook_name` TEXT NOT NULL,
-  `webhook_pp` BOOLEAN NOT NULL DEFAULT 0
-);
-CREATE INDEX IF NOT EXISTS idx_wormhole_list ON `wormhole_list` (`name`);
-
-CREATE TABLE IF NOT EXISTS `wormhole_admin` (
+CREATE TABLE IF NOT EXISTS `wormholes` (
+  `id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `name` TEXT NOT NULL,
-  `admin` BIGINT NOT NULL
+  `sync_threads` BOOLEAN NOT NULL DEFAULT true
 );
-CREATE INDEX IF NOT EXISTS idx_wormhole_admin ON `wormhole_admin` (`name`);
+CREATE INDEX IF NOT EXISTS idx_wormholes ON `wormholes` (`id`);
 
-CREATE TABLE IF NOT EXISTS `wormhole_channel` (
-    `name` TEXT NOT NULL,
-    `channelID` BIGINT NOT NULL,
-    `guildID` BIGINT NOT NULL,
-    `type` TEXT NOT NULL,
-    `webhookID` BIGINT NOT NULL,
-    `webhookTOKEN` TEXT NOT NULL
+CREATE TABLE IF NOT EXISTS `wormhole_admins` (
+  `wormhole_id` TEXT NOT NULL,
+  `user_id` BIGINT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS idx_wormhole_channel ON `wormhole_channel` (`name`);
+CREATE INDEX IF NOT EXISTS idx_wormhole_admins ON `wormhole_admins` (`wormhole_id`);
+
+CREATE TABLE IF NOT EXISTS `wormhole_channels` (
+    `wormhole_id` TEXT NOT NULL,
+    `channel_id` BIGINT NOT NULL,
+    `can_read` BIGINT NOT NULL DEFAULT true,
+    `can_write` BIGINT NOT NULL DEFAULT true,
+    `webhook_id` BIGINT NOT NULL,
+    `webhook_token` TEXT NOT NULL,
+    `webhook_name` TEXT NOT NULL DEFAULT '{user}',
+    `webhook_avatar` TEXT NOT NULL DEFAULT 'user'
+);
+CREATE INDEX IF NOT EXISTS idx_wormhole_channels ON `wormhole_channels` (`wormhole_id`);

@@ -5,24 +5,29 @@
 
 fr:
   wormhole:
+    list:
+      user: "Voici tous les trous de ver auxquels tu as accès:"
+      guild: "Voici tous les trous de ver présent sur ce serveur:"
     error:
       already-exists: "Le trou de ver %{name} existe déjà"
       already-linked: "Le salon %{c} est déjà lié à ce trou de ver"
       not-exists: "Le trou de ver %{name} n'existe pas"
       not-linked: "Le salon %{c} n'est lié à aucun trou de ver"
-      not-admin: "Vous devez être administrateur de ce trou de ver"
+      not-admin: "Vous devez être administrateur de ce trou de ver 🛑"
       not-privacy: L'option de visibilité doit être définie sur "public" ou "private"
       already-admin: "%{user} est déjà administrateur de ce trou de ver"
       notadmin: "%{user} n'est pas administrateur de ce trou de ver"
       no-wormhole: "Il n'y a aucun trou de ver pour le moment. Créez en un avec la commande `%{p}wormhole add`"
       no-channel: "Il n'y a aucun salon lié à ce trou de ver pour le moment. Liez en un avec la commande `%{p}wormhole link`"
+      too-many-wormholes: "Attends, non, tu as déjà 5 trou de ver 🤯\nCa devrait être suffisant..."
+      target-has-too-many-wormholes: "Désolé, mais %{user} a déjà 5 trous de ver.."
     success:
-      wormhole-created: "Trou de ver créé !"
+      wormhole-created: "Le trou de ver a bien été créé ! 🌀\nProchaine étape : le connecter à un salon avec `/wormhole-link`"
       channel-linked: "Le salon a bien été lié au trou de ver !"
       wormhole-deleted: "Le trou de ver a été supprimé"
       channel-unlinked: "Le lien entre le salon et le trou de ver a bien été rompu"
       modified: "Les modifications ont bien été appliquées"
-      admin-added: "L'administrateur a bien été ajouté"
+      admin-added:  "%{user} est désormais administrateur du trou de ver \"%{wormhole}\""
       admin-removed: "L'administrateur a été retiré"
     reply_to: "En réponse à [ce message](%{link})"
     reply_notfound: "En réponse à ... un message qui à été édité ou supprimé."
