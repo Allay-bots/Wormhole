@@ -16,14 +16,19 @@ CREATE TABLE IF NOT EXISTS `wormhole_admins` (
 );
 CREATE INDEX IF NOT EXISTS idx_wormhole_admins ON `wormhole_admins` (`wormhole_id`);
 
-CREATE TABLE IF NOT EXISTS `wormhole_channels` (
+CREATE TABLE IF NOT EXISTS `wormhole_links` (
     `wormhole_id` TEXT NOT NULL,
     `channel_id` BIGINT NOT NULL,
     `can_read` BIGINT NOT NULL DEFAULT true,
     `can_write` BIGINT NOT NULL DEFAULT true,
-    `webhook_id` BIGINT NOT NULL,
-    `webhook_token` TEXT NOT NULL,
     `webhook_name` TEXT NOT NULL DEFAULT '{user}',
     `webhook_avatar` TEXT NOT NULL DEFAULT 'user'
 );
-CREATE INDEX IF NOT EXISTS idx_wormhole_channels ON `wormhole_channels` (`wormhole_id`);
+CREATE INDEX IF NOT EXISTS idx_wormhole_links ON `wormhole_links` (`wormhole_id`);
+
+CREATE TABLE IF NOT EXISTS `wormhole_webhooks` (
+    `id` BIGINT NOT NULL,
+    `token` TEXT NOT NULL,
+    `channel_id` BIGINT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_wormhole_webhooks ON `wormhole_webhooks` (`id`);
