@@ -5,6 +5,8 @@
 
 en:
   wormhole:
+    view:
+      select-wormhole: "Select a wormhole"
     list:
       user: "Here is all the wormholes you have access:"
       guild: "Here is all the wormholes connected to this server"

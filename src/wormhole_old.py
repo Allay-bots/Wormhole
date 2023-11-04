@@ -383,7 +383,7 @@ class Wormholes(commands.Cog):
                     if reply is None:
                         embeds.append(
                             discord.Embed(
-                                description=await allay.I18N.tr(
+                                description=allay.I18N.tr(
                                     old_message.guild.id, "wormhole.reply_notfound"
                                 ),
                                 colour=0x2F3136,
@@ -395,7 +395,7 @@ class Wormholes(commands.Cog):
                             content = content[:80] + "..."
                         embeds.append(
                             discord.Embed(
-                                description=await allay.I18N.tr(
+                                description=allay.I18N.tr(
                                     old_message.guild.id,
                                     "wormhole.reply_to",
                                     link=reply.jump_url,
@@ -492,7 +492,7 @@ class Wormholes(commands.Cog):
                     if reply is None:
                         embed_reply = discord.Embed(
                             # "https://gunivers.net"), #
-                            description=await allay.I18N.tr(
+                            description=allay.I18N.tr(
                                 message.guild.id, "wormhole.reply_notfound"
                             ),
                             colour=0x2F3136,  # 2F3136
@@ -503,7 +503,7 @@ class Wormholes(commands.Cog):
                             content = content[:80] + "..."
                         embed_reply = discord.Embed(
                             # "https://gunivers.net"), #
-                            description=await allay.I18N.tr(
+                            description=allay.I18N.tr(
                                 message.guild.id,
                                 "wormhole.reply_to",
                                 link=reply.jump_url,
@@ -566,7 +566,7 @@ class Wormholes(commands.Cog):
         """
         if self.db_check_wh_exists(name):
             await ctx.send(
-                await allay.I18N.tr(
+                allay.I18N.tr(
                     ctx.guild.id, "wormhole.error.already-exists", name=name
                 )
             )
@@ -577,7 +577,7 @@ class Wormholes(commands.Cog):
         query = "INSERT INTO wormhole_admin (name, admin) VALUES (?,?)"
         self.bot.db_query(query, (name, ctx.author.id))
         await ctx.send(
-            await allay.I18N.tr(ctx.guild.id, "wormhole.success.wormhole-created")
+            allay.I18N.tr(ctx.guild.id, "wormhole.success.wormhole-created")
         )
 
     @wormhole.command(name="link")
@@ -598,21 +598,21 @@ class Wormholes(commands.Cog):
         row = self.bot.db_query(query, (ctx.channel.id,), fetchone=True)
         if len(row) != 0:
             await ctx.send(
-                await allay.I18N.tr(
+                allay.I18N.tr(
                     ctx.guild.id, "wormhole.error.already-linked", c=ctx.channel
                 )
             )
             return
         if not self.db_check_wh_exists(wormhole):
             await ctx.send(
-                await allay.I18N.tr(
+                allay.I18N.tr(
                     ctx.guild.id, "wormhole.error.not-exists", name=wormhole
                 )
             )
         else:
             if not self.db_check_is_admin(wormhole, ctx.author.id):
                 await ctx.send(
-                    await allay.I18N.tr(ctx.guild.id, "wormhole.error.not-admin")
+                    allay.I18N.tr(ctx.guild.id, "wormhole.error.not-admin")
                 )
                 return
             query = "INSERT INTO wormhole_channel"\
@@ -636,7 +636,7 @@ class Wormholes(commands.Cog):
                 ),
             )
             await ctx.send(
-                await allay.I18N.tr(ctx.guild.id, "wormhole.success.channel-linked")
+                allay.I18N.tr(ctx.guild.id, "wormhole.success.channel-linked")
             )
 
     @wormhole.command(name="unlink")
@@ -649,7 +649,7 @@ class Wormholes(commands.Cog):
         )
         # comes as: (name, channelID, guildID, type, webhookID, webhookTOKEN)
         if len(wh_channel) == 0:
-            await ctx.send(await allay.I18N.tr(ctx.guild.id, "wormhole.error.not-linked"))
+            await ctx.send(allay.I18N.tr(ctx.guild.id, "wormhole.error.not-linked"))
             return
         query = "DELETE FROM wormhole_channel WHERE channelID = ? AND name = ?"
         self.bot.db_query(query, (ctx.channel.id, wh_channel[0]))
@@ -659,7 +659,7 @@ class Wormholes(commands.Cog):
             )
             await webhook.delete()
         await ctx.send(
-            await allay.I18N.tr(ctx.guild.id, "wormhole.success.channel-unlinked")
+            allay.I18N.tr(ctx.guild.id, "wormhole.success.channel-unlinked")
         )
 
     @wormhole.command(name="remove", aliases=["delete"])
@@ -667,13 +667,13 @@ class Wormholes(commands.Cog):
         """Delete a wormhole"""
         if not self.db_check_wh_exists(wormhole):
             await ctx.send(
-                await allay.I18N.tr(
+                allay.I18N.tr(
                     ctx.guild.id, "wormhole.error.not-exists", name=wormhole
                 )
             )
             return
         if not self.db_check_is_admin(wormhole, ctx.author.id):
-            await ctx.send(await allay.I18N.tr(ctx.guild.id, "wormhole.error.not-admin"))
+            await ctx.send(allay.I18N.tr(ctx.guild.id, "wormhole.error.not-admin"))
             return
         query = "DELETE FROM wormhole_channel WHERE name = ?"
         self.bot.db_query(query, (wormhole,))
@@ -682,7 +682,7 @@ class Wormholes(commands.Cog):
         query = "DELETE FROM wormhole_list WHERE name = ?"
         self.bot.db_query(query, (wormhole,))
         await ctx.send(
-            await allay.I18N.tr(ctx.guild.id, "wormhole.success.wormhole-deleted")
+            allay.I18N.tr(ctx.guild.id, "wormhole.success.wormhole-deleted")
         )
 
     @wormhole.group(name="modify", aliases=["edit"])
@@ -696,21 +696,21 @@ class Wormholes(commands.Cog):
         """Edit the privacy of a wormhole
         Options for privacy are "public" and "private" """
         if privacy.lower() not in ["public", "private"]:
-            await ctx.send(await allay.I18N.tr(ctx.guild.id, "wormhole.error.not-privacy"))
+            await ctx.send(allay.I18N.tr(ctx.guild.id, "wormhole.error.not-privacy"))
             return
         if not self.db_check_wh_exists(wormhole):
             return await ctx.send(
-                await allay.I18N.tr(
+                allay.I18N.tr(
                     ctx.guild.id, "wormhole.error.not-exists", name=wormhole
                 )
             )
         if not self.db_check_is_admin(wormhole, ctx.author.id):
-            await ctx.send(await allay.I18N.tr(ctx.guild.id, "wormhole.error.not-admin"))
+            await ctx.send(allay.I18N.tr(ctx.guild.id, "wormhole.error.not-admin"))
             return
         query = "UPDATE wormhole_list SET privacy = ? WHERE name = ?"
         private = privacy.lower() == "private"
         self.bot.db_query(query, (private, wormhole))
-        await ctx.send(await allay.I18N.tr(ctx.guild.id, "wormhole.success.modified"))
+        await ctx.send(allay.I18N.tr(ctx.guild.id, "wormhole.success.modified"))
 
     @modify.command(name="webhook_name")
     async def modify_webhook_name(
@@ -731,16 +731,16 @@ class Wormholes(commands.Cog):
 
         if not self.db_check_wh_exists(wormhole):
             return await ctx.send(
-                await allay.I18N.tr(
+                allay.I18N.tr(
                     ctx.guild.id, "wormhole.error.not-exists", name=wormhole
                 )
             )
         if not self.db_check_is_admin(wormhole, ctx.author.id):
-            await ctx.send(await allay.I18N.tr(ctx.guild.id, "wormhole.error.not-admin"))
+            await ctx.send(allay.I18N.tr(ctx.guild.id, "wormhole.error.not-admin"))
             return
         query = "UPDATE wormhole_list SET webhook_name = ? WHERE name = ?"
         self.bot.db_query(query, (webhook_name, wormhole))
-        await ctx.send(await allay.I18N.tr(ctx.guild.id, "wormhole.success.modified"))
+        await ctx.send(allay.I18N.tr(ctx.guild.id, "wormhole.success.modified"))
 
     @modify.command(name="webhook_pp")
     async def modify_webhook_pp(self, ctx: allay.Context, wormhole: str, webhook_pp: bool):
@@ -749,17 +749,17 @@ class Wormholes(commands.Cog):
         and if False it will be the User who sent the message"""
         if not self.db_check_wh_exists(wormhole):
             await ctx.send(
-                await allay.I18N.tr(
+                allay.I18N.tr(
                     ctx.guild.id, "wormhole.error.not-exists", name=wormhole
                 )
             )
             return
         if not self.db_check_is_admin(wormhole, ctx.author.id):
-            await ctx.send(await allay.I18N.tr(ctx.guild.id, "wormhole.error.not-admin"))
+            await ctx.send(allay.I18N.tr(ctx.guild.id, "wormhole.error.not-admin"))
             return
         query = "UPDATE wormhole_list SET webhook_pp = ? WHERE name = ?"
         self.bot.db_query(query, (webhook_pp, wormhole))
-        await ctx.send(await allay.I18N.tr(ctx.guild.id, "wormhole.success.modified"))
+        await ctx.send(allay.I18N.tr(ctx.guild.id, "wormhole.success.modified"))
 
     @wormhole.group(name="admin")
     async def admin(self, ctx: allay.Context):
@@ -772,13 +772,13 @@ class Wormholes(commands.Cog):
         """Add a user as a wormhole admin"""
         if not self.db_check_wh_exists(wormhole):
             await ctx.send(
-                await allay.I18N.tr(
+                allay.I18N.tr(
                     ctx.guild.id, "wormhole.error.not-exists", name=wormhole
                 )
             )
             return
         if not self.db_check_is_admin(wormhole, ctx.author.id):
-            await ctx.send(await allay.I18N.tr(ctx.guild.id, "wormhole.error.not-admin"))
+            await ctx.send(allay.I18N.tr(ctx.guild.id, "wormhole.error.not-admin"))
             return
         query = "SELECT 1 FROM wormhole_admin WHERE name = ? AND admin = ?"
         is_already = len(self.bot.db_query(query, (wormhole, user.id))) > 0
@@ -786,11 +786,11 @@ class Wormholes(commands.Cog):
             query = "INSERT INTO wormhole_admin (name, admin) VALUES (?, ?)"
             self.bot.db_query(query, (wormhole, user.id))
             await ctx.send(
-                await allay.I18N.tr(ctx.guild.id, "wormhole.success.admin-added")
+                allay.I18N.tr(ctx.guild.id, "wormhole.success.admin-added")
             )
         else:
             await ctx.send(
-                await allay.I18N.tr(
+                allay.I18N.tr(
                     ctx.guild.id, "wormhole.error.already-admin", user=user.name
                 )
             )
@@ -800,13 +800,13 @@ class Wormholes(commands.Cog):
         """Revoke an admin of a wormhole"""
         if not self.db_check_wh_exists(wormhole):
             await ctx.send(
-                await allay.I18N.tr(
+                allay.I18N.tr(
                     ctx.guild.id, "wormhole.error.not-exists", name=wormhole
                 )
             )
             return
         if not self.db_check_is_admin(wormhole, ctx.author.id):
-            await ctx.send(await allay.I18N.tr(ctx.guild.id, "wormhole.error.not-admin"))
+            await ctx.send(allay.I18N.tr(ctx.guild.id, "wormhole.error.not-admin"))
             return
         query = "SELECT 1 FROM wormhole_admin WHERE name = ? AND admin = ?"
         is_already = len(self.bot.db_query(query, (wormhole, user.id))) > 0
@@ -814,11 +814,11 @@ class Wormholes(commands.Cog):
             query = "DELETE FROM wormhole_admin WHERE admin = ? AND name = ?"
             self.bot.db_query(query, (user.id, wormhole))
             await ctx.send(
-                await allay.I18N.tr(ctx.guild.id, "wormhole.success.admin-removed")
+                allay.I18N.tr(ctx.guild.id, "wormhole.success.admin-removed")
             )
         else:
             await ctx.send(
-                await allay.I18N.tr(
+                allay.I18N.tr(
                     ctx.guild.id, "wormhole.error.not-admin", user=user.name
                 )
             )
@@ -835,7 +835,7 @@ class Wormholes(commands.Cog):
         wormholes = self.db_get_wormholes()
         if not wormholes:  # we can't send an empty list
             await ctx.send(
-                await allay.I18N.tr(
+                allay.I18N.tr(
                     ctx.guild.id, "wormhole.error.no-wormhole", p=ctx.prefix
                 )
             )
@@ -849,7 +849,7 @@ class Wormholes(commands.Cog):
         channels = self.db_get_wh_channels_in_guild(ctx.guild.id)
         if not channels:  # we can't send an empty list
             await ctx.send(
-                await allay.I18N.tr(
+                allay.I18N.tr(
                     ctx.guild.id, "wormhole.error.no-channel", p=ctx.prefix
                 )
             )

@@ -4,7 +4,7 @@ import discord
 import allay
 
 class WormholeSelector(discord.ui.Select):
-    def __init__(self, wormholes_id:list[int]):
+    def __init__(self, wormholes_id:list[int], locale=None):
         self.wormholes_id = sorted(wormholes_id)
 
         options = []
@@ -12,16 +12,16 @@ class WormholeSelector(discord.ui.Select):
             if wh['id'] in self.wormholes_id:
                 options.append(discord.SelectOption(label=wh['name'], value=str(wh['id'])))
 
-        super().__init__(placeholder='Select a wormhole', min_values=1, max_values=1, options=options)
+        super().__init__(placeholder=allay.I18N.tr(locale,"wormhole.view.select-wormhole"), min_values=1, max_values=1, options=options)
 
     async def callback(self, interaction: discord.Interaction):
         self.interaction = interaction
         self.view.stop()
 
 class WormholeSelectorView(discord.ui.View):
-    def __init__(self, wormholes_id:list[int]):
+    def __init__(self, wormholes_id:list[int], locale=None):
         super().__init__()
-        self.add_item(WormholeSelector(wormholes_id))
+        self.add_item(WormholeSelector(wormholes_id, locale=locale))
 
     @property
     def interaction(self):

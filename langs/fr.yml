@@ -5,6 +5,8 @@
 
 fr:
   wormhole:
+    view:
+      select-wormhole: "Choisis un trou de ver"
     list:
       user: "Voici tous les trous de ver auxquels tu as accès:"
       guild: "Voici tous les trous de ver présent sur ce serveur:"
@@ -13,7 +15,7 @@ fr:
       already-linked: "Le salon %{c} est déjà lié à ce trou de ver"
       not-exists: "Le trou de ver %{name} n'existe pas"
       not-linked: "Le salon %{c} n'est lié à aucun trou de ver"
-      not-admin: "Vous devez être administrateur de ce trou de ver 🛑"
+      not-admin: "Tu dois être administrateur de ce trou de ver 🛑"
       not-privacy: L'option de visibilité doit être définie sur "public" ou "private"
       already-admin: "%{user} est déjà administrateur de ce trou de ver"
       notadmin: "%{user} n'est pas administrateur de ce trou de ver"

@@ -1,0 +1,35 @@
+# Ce programme est régi par la licence CeCILL soumise au droit français et
+# respectant les principes de diffusion des logiciels libres. Vous pouvez
+# utiliser, modifier et/ou redistribuer ce programme sous les conditions
+# de la licence CeCILL diffusée sur le site "http://www.cecill.info".
+
+ja:
+  wormhole:
+    view:
+      select-wormhole: "ワームホールを選択してください"
+    list:
+      user: "アクセスできるすべてのワームホールは次のとおりです。"
+      guild: "このサーバーに接続されているすべてのワームホールはこちらです"
+    error:
+      already-exists: "名前が%{name}のワームホールはすでに存在します"
+      already-linked: "チャンネル%{c}はすでにこのワームホールにリンクされています"
+      not-exists: "ワームホール%{name}は存在しません"
+      not-linked: "チャンネル%{c}はどのワームホールにもリンクされていません"
+      not-admin: "このワームホールの管理者である必要があります 🛑"
+      not-privacy: "プライバシーオプションは「public」または「private」である必要があります"
+      already-admin: "%{user}は既に管理者です"
+      notadmin: "%{user}は管理者ではありません"
+      no-wormhole: "まだワームホールを持っていません..."
+      no-channel: "現在はリンクされているチャンネルがありません。%{p}wormhole linkでリンクしてください"
+      too-many-wormholes: "待ってください、すでに5つのワームホールを持っています 🤯\nそれは十分でしょう..."
+      target-has-too-many-wormholes: "申し訳ありませんが、%{user}はすでに5つのワームホールを持っています..."
+    success:
+      wormhole-created: "ワームホールが正常に作成されました！ 🌀\n次のステップ：`/wormhole-link`を使用してチャンネルに接続します"
+      channel-linked: "チャンネルが正常にリンクされました"
+      wormhole-deleted: "ワームホールが正常に削除されました"
+      channel-unlinked: "チャンネルが正常にリンク解除されました"
+      modified: "変更が正常に行われました"
+      admin-added: "%{user}は今、ワームホール「%{wormhole}」の管理者です"
+      admin-removed: "管理者が正常に削除されました"
+    reply_to: "[このメッセージへの返信](%{link})"
+    reply_notfound: "返信元... 編集または削除されたメッセージへの返信です。"
