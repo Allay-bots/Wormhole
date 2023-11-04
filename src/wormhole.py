@@ -86,80 +86,83 @@ class Wormhole(commands.Cog):
         if channel is None:
             channel = interaction.channel
 
-        # Apply routine for a given wormhole ID ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        async def link_apply(interaction, wormhole_id:int):
-
-            # Check if the source user is admin of the wormhole
-            if wormhole_id not in self.get_user_wormholes(interaction.user):
-                await interaction.response.send_message(await allay.I18N.tr(interaction, "wormhole.error.not-admin"))
-                return
-            
-            # Check if the channel is already linked to the wormhole
-            if channel.id in [int(link['channel_id']) for link in allay.Database.query(f"SELECT channel_id FROM wormhole_links WHERE wormhole_id={wormhole_id}")]:
-                await interaction.response.send_message(await allay.I18N.tr(interaction, "wormhole.error.already-linked"))
-                return
-            
-            # TODO: Check if the user can see & manage messages in the channel
-
-            # Create the link
-            allay.Database.query("INSERT INTO wormhole_links (wormhole_id, channel_id, can_read, can_write) VALUES (?,?,?,?)", (wormhole_id, channel.id, read, write))
-
-            # Confirm the addition
-            await interaction.response.send_message(await allay.I18N.tr(interaction, "wormhole.success.channel-linked"))
-
         # Ask for the wormhole ID ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         # Wormhole selection if no ID is specified
         if wormhole_id is None:
-            await interaction.response.send_message(view=WormholeSelectorView(
-                wormholes_id = self.get_user_wormholes(interaction.user),
-                callback = link_apply
-            ))
+            selector = WormholeSelectorView(wormholes_id = self.get_user_wormholes(interaction.user))
+            await interaction.response.send_message(view=selector)
+            await selector.wait()
+            wormhole_id = int(selector.values[0])
+            interaction = selector.interaction
+            if wormhole_id is None:
+                return
         else:
             await self.link_apply(interaction, wormhole_id)
+
+        # Apply routine for a given wormhole ID ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        # Check if the source user is admin of the wormhole
+        if wormhole_id not in self.get_user_wormholes(interaction.user):
+            await interaction.response.send_message(await allay.I18N.tr(interaction, "wormhole.error.not-admin"))
+            return
+        
+        # Check if the channel is already linked to the wormhole
+        if channel.id in [int(link['channel_id']) for link in allay.Database.query(f"SELECT channel_id FROM wormhole_links WHERE wormhole_id={wormhole_id}")]:
+            await interaction.response.send_message(await allay.I18N.tr(interaction, "wormhole.error.already-linked", c=channel.mention))
+            return
+        
+        # TODO: Check if the user can see & manage messages in the channel
+
+        # Create the link
+        allay.Database.query("INSERT INTO wormhole_links (wormhole_id, channel_id, can_read, can_write) VALUES (?,?,?,?)", (wormhole_id, channel.id, read, write))
+
+        # Confirm the addition
+        await interaction.response.send_message(await allay.I18N.tr(interaction, "wormhole.success.channel-linked"))
 
     # Add admin ---------------------------------------------------------------
 
     @wormhole.command(name="admin-add", description="Add an admin to a wormhole")
     async def add_admin(self, interaction, user:discord.User, wormhole_id:int=None):
 
-        # Apply routine for a given wormhole ID ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        async def add_admin_apply(interaction, wormhole_id:int):
-
-            # Check if the source user is admin of the wormhole
-            if wormhole_id not in self.get_user_wormholes(interaction.user):
-                await interaction.response.send_message(await allay.I18N.tr(interaction, "wormhole.error.not-admin"))
-                return
-            
-            # Check if the target user is already admin of the wormhole
-            if user.id in [int(admin['user_id']) for admin in allay.Database.query(f"SELECT user_id FROM wormhole_admins WHERE wormhole_id={wormhole_id}")]:
-                await interaction.response.send_message(await allay.I18N.tr(interaction, "wormhole.error.already-admin", user=user.display_name))
-                return
-            
-            # Check if the target user already have 5 wormholes
-            if len(self.get_user_wormholes(user)) >= 5:
-                await interaction.response.send_message(await allay.I18N.tr(interaction, "wormhole.error.target-has-too-many-wormholes", user=user.display_name))
-                return
-
-            # Add the user as an admin
-            allay.Database.query("INSERT INTO wormhole_admins (wormhole_id, user_id) VALUES (?,?)", (wormhole_id, user.id))
-
-            # Confirm the addition
-            wormhole_name = allay.Database.query(f"SELECT name FROM wormholes WHERE id={wormhole_id}")[0]['name']
-            await interaction.response.send_message(await allay.I18N.tr(interaction, "wormhole.success.admin-added", user=user.mention, wormhole=wormhole_name))
-
         # Ask for the wormhole ID ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        # Wormhole selection if no ID is specified
         if wormhole_id is None:
-            await interaction.response.send_message(view=WormholeSelectorView(
-                wormholes_id = self.get_user_wormholes(interaction.user),
-                callback = add_admin_apply
-            ))
+            selector = WormholeSelectorView(wormholes_id = self.get_user_wormholes(interaction.user))
+            await interaction.response.send_message(view=selector)
+            await selector.wait()
+            wormhole_id = int(selector.values[0])
+            interaction = selector.interaction
+            if wormhole_id is None:
+                return
         else:
-            await self.add_admin_apply(interaction, wormhole_id)
+            await self.link_apply(interaction, wormhole_id)
+
+        # Run checks ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        # Check if the source user is admin of the wormhole
+        if wormhole_id not in self.get_user_wormholes(interaction.user):
+            await interaction.response.send_message(await allay.I18N.tr(interaction, "wormhole.error.not-admin"))
+            return
+        
+        # Check if the target user is already admin of the wormhole
+        if user.id in [int(admin['user_id']) for admin in allay.Database.query(f"SELECT user_id FROM wormhole_admins WHERE wormhole_id={wormhole_id}")]:
+            await interaction.response.send_message(await allay.I18N.tr(interaction, "wormhole.error.already-admin", user=user.display_name))
+            return
+        
+        # Check if the target user already have 5 wormholes
+        if len(self.get_user_wormholes(user)) >= 5:
+            await interaction.response.send_message(await allay.I18N.tr(interaction, "wormhole.error.target-has-too-many-wormholes", user=user.display_name))
+            return
+        
+        # Create the link ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        # Add the user as an admin
+        allay.Database.query("INSERT INTO wormhole_admins (wormhole_id, user_id) VALUES (?,?)", (wormhole_id, user.id))
+
+        # Confirm the addition
+        wormhole_name = allay.Database.query(f"SELECT name FROM wormholes WHERE id={wormhole_id}")[0]['name']
+        await interaction.response.send_message(await allay.I18N.tr(interaction, "wormhole.success.admin-added", user=user.mention, wormhole=wormhole_name))
 
     #==========================================================================
     # Utils

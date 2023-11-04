@@ -20,7 +20,7 @@ fr:
       no-wormhole: "Tu n'as aucun trou de ver pour le moment..."
       no-channel: "Il n'y a aucun salon lié à ce trou de ver pour le moment. Liez en un avec la commande `%{p}wormhole link`"
       too-many-wormholes: "Attends, non, tu as déjà 5 trou de ver 🤯\nCa devrait être suffisant..."
-      target-has-too-many-wormholes: "Désolé, mais %{user} a déjà 5 trous de ver.."
+      target-has-too-many-wormholes: "Désolé, mais %{user} a déjà 5 trous de ver..."
     success:
       wormhole-created: "Le trou de ver a bien été créé ! 🌀\nProchaine étape : le connecter à un salon avec `/wormhole-link`"
       channel-linked: "Le salon a bien été lié au trou de ver !"

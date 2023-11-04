@@ -10,7 +10,7 @@ en:
       guild: "Here is all the wormholes connected to this server"
     error:
       already-exists: "A wormhole with the name %{name} already exists"
-      already-linked: "The channel %{c} is already linked to a wormhole"
+      already-linked: "The channel %{c} is already linked to this wormhole"
       not-exists: "The wormhole %{name} does not exist"
       not-linked: "The channel %{c} is not linked to any wormhole"
       not-admin: "You have to be an admin of this wormhole 🛑"
