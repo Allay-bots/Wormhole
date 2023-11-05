@@ -2,34 +2,50 @@
 # respectant les principes de diffusion des logiciels libres. Vous pouvez
 # utiliser, modifier et/ou redistribuer ce programme sous les conditions
 # de la licence CeCILL diffusée sur le site "http://www.cecill.info".
-
 fr:
   wormhole:
-    view:
-      select-wormhole: "Choisis un trou de ver"
+
+    generic:
+      not-exist: "Ce trou de ver n'existe pas"
+      not-admin: "Tu dois être un admin de ce trou de ver 🛑"
+
+    admin:
+      invalid-action: "Action invalide..."
+      add:
+        target-is-already-admin: "%{user} est déjà admin de \"%{wormhole}\", donc considère que c'est fait ! :innocent:"
+        target-has-too-many-wormholes: "Désolé, mais %{user} a déjà 5 trous de ver :/"
+        success: "Ok ! %{user} est maintenant admin de \"%{wormhole}\""
+      remove:
+        target-is-not-admin: "%{user} n'est pas admin de %{wormhole}, donc considère que c'est fait ! :innocent:"
+        success: "D'accord, %{user} n'est plus admin de \"%{wormhole}\""
+
+    link:
+      add:
+        already-linked: "%{channel} est déjà lié à \"%{wormhole}\""
+        success: "%{channel} est maintenant lié à \"%{wormhole}\" !"
+      remove:
+        channel-have-no-link: "%{channel} n'est pas lié à aucun trou de ver"
+        success: "\"%{wormhole}\" a été désormais délié de %{channel}"
+
     list:
-      user: "Voici tous les trous de ver auxquels tu as accès:"
-      guild: "Voici tous les trous de ver présent sur ce serveur:"
-    error:
-      already-exists: "Le trou de ver %{name} existe déjà"
-      already-linked: "Le salon %{c} est déjà lié à ce trou de ver"
-      not-exists: "Le trou de ver %{name} n'existe pas"
-      not-linked: "Le salon %{c} n'est lié à aucun trou de ver"
-      not-admin: "Tu dois être administrateur de ce trou de ver 🛑"
-      not-privacy: L'option de visibilité doit être définie sur "public" ou "private"
-      already-admin: "%{user} est déjà administrateur de ce trou de ver"
-      notadmin: "%{user} n'est pas administrateur de ce trou de ver"
-      no-wormhole: "Tu n'as aucun trou de ver pour le moment..."
-      no-channel: "Il n'y a aucun salon lié à ce trou de ver pour le moment. Liez en un avec la commande `%{p}wormhole link`"
-      too-many-wormholes: "Attends, non, tu as déjà 5 trou de ver 🤯\nCa devrait être suffisant..."
-      target-has-too-many-wormholes: "Désolé, mais %{user} a déjà 5 trous de ver..."
-    success:
-      wormhole-created: "Le trou de ver a bien été créé ! 🌀\nProchaine étape : le connecter à un salon avec `/wormhole-link`"
-      channel-linked: "Le salon a bien été lié au trou de ver !"
-      wormhole-deleted: "Le trou de ver a été supprimé"
-      channel-unlinked: "Le lien entre le salon et le trou de ver a bien été rompu"
-      modified: "Les modifications ont bien été appliquées"
-      admin-added:  "%{user} est désormais administrateur du trou de ver \"%{wormhole}\""
-      admin-removed: "L'administrateur a été retiré"
-    reply_to: "En réponse à [ce message](%{link})"
-    reply_notfound: "En réponse à ... un message qui à été édité ou supprimé."
+      invalid-predicate: "Valeur \"which\" invalide. Choisis parmi les options proposées. (Tu sais que je ne suis pas humain, n'est-ce pas ? Je ne comprends pas vraiment ce que tu écris... pour l'instant ^^')"
+      user: "Voici tous les trous de ver auxquels tu as accès :"
+      channel: "Voici tous les trous de ver liés à ce canal :"
+      guild: "Voici tous les trous de ver liés quelque part sur ce serveur :"
+      user-have-no-wormhole: "Tu n'as pas encore de trou de ver. Tu peux en créer un avec la commande `/wormhole add` !"
+      channel-have-no-wormhole: "Ce canal n'est pas encore lié à un trou de ver. Tu peux en créer un avec la commande `/wormhole add` !"
+      guild-have-no-wormhole: "Ce serveur n'a pas encore de lien de trou de ver. Tu peux en créer un avec la commande `/wormhole add` !"
+      
+    open:
+      reach-limit: "Attends, non, tu as déjà 5 trous de ver ouverts 🤯\nCela devrait suffire..."
+      success: "Trous de ver ouvert ! 🌀\nÉtape suivante : le connecter à un canal avec la commande `/wormhole link`"
+
+    close:
+      success: "\"%{wormhole}\" a été fermé !"
+
+    message:
+      reply_to: "En réponse à [ce message](%{link})"
+      reply_notfound: "En réponse à... un message que je ne peux pas trouver. Étrange :thinking:"
+
+    edit:
+      success: "Modification effectuée avec succès"

@@ -5,31 +5,48 @@
 
 en:
   wormhole:
-    view:
-      select-wormhole: "Select a wormhole"
-    list:
-      user: "Here is all the wormholes you have access:"
-      guild: "Here is all the wormholes connected to this server"
-    error:
-      already-exists: "A wormhole with the name %{name} already exists"
-      already-linked: "The channel %{c} is already linked to this wormhole"
-      not-exists: "The wormhole %{name} does not exist"
-      not-linked: "The channel %{c} is not linked to any wormhole"
+
+    generic:
+      not-exist: "This wormhole does not exist"
       not-admin: "You have to be an admin of this wormhole 🛑"
-      not-privacy: Privacy option has to be "public" or "private"
-      already-admin: "%{user} is already an admin"
-      notadmin: "%{user} is not an admin"
-      no-wormhole: "You don't have any wormhole yet..."
-      no-channel: "There is no channel linked for now. Link on with %{p}wormhole link"
-      too-many-wormholes: "Wait, no, you already have 5 wormholes 🤯\nIt should be enough..."
-      target-has-too-many-wormholes: "Sorry, but %{user} already have 5 wormholes..."
-    success:
-      wormhole-created: "Wormhole successfully created! 🌀\nNext step: connect it to a channel with `/wormhole-link`"
-      channel-linked: "Channel successfully linked"
-      wormhole-deleted: "Wormhole successfully deleted"
-      channel-unlinked: "Channel successfully unlinked"
-      modified: "Modification successfully done"
-      admin-added: "%{user} is now admin of the wormhole \"%{wormhole}\""
-      admin-removed: "Admin successfully removed"
-    reply_to: "In reply to [this message](%{link})"
-    reply_notfound: "In reply to... a message that have been edited or deleted."
+
+    admin:
+      invalid-action: "Invalid action..."
+      add:
+        target-is-already-admin: "%{user} is already an admin of \"%{wormhole}\", so consider it is done! :innocent:"
+        target-has-too-many-wormholes: "Sorry, but %{user} already have 5 wormholes :/"
+        success: "Ok! %{user} is now admin of \"%{wormhole}\""
+      remove:
+        target-is-not-admin: "%{user} is not an admin of %{wormhole}, so consider it is done! :innocent:"
+        success: "Ok, %{user} is no more an admin of \"%{wormhole}\""
+
+    link:
+      add:
+        already-linked: "%{channel} is already linked to \"%{wormhole}\""
+        success: "%{channel} is now linked to \"%{wormhole}\"!"
+      remove:
+        channel-have-no-link: "%{channel} is not linked to any wormhole"
+        success: "\"%{wormhole}\" has been successfully unlinked from %{channel}"
+
+    list:
+      invalid-predicate: "Invalid \"which\" value. Please chose among the proposed ones. (You know that I'm not a human right? I not really understand what you write... yet ^^')"
+      user: "Here is all the wormholes you have access:"
+      channel: "Here is all the wormholes linked to this channel:"
+      guild: "Here is all the wormholes linked somewhere on this server:"
+      user-have-no-wormhole: "You don't have any wormhole yet. You can create one with the `/wormhole add` command!"
+      channel-have-no-wormhole: "This channel isn't linked to any wormhole yet. You can create one with the `/wormhole add` command!"
+      guild-have-no-wormhole: "This server doesn't have any wormhole link yet. You can create one with the `/wormhole add` command!"
+      
+    open:
+      reach-limit: "Wait, no, you already have 5 open wormholes 🤯\nIt should be enough..."
+      success: "Wormhole opened! 🌀\nNext step: connect it to a channel with `/wormhole link`"
+
+    close:
+      success: "\"%{wormhole}\" has been closed!"
+
+    message:
+      reply_to: "In reply to [this message](%{link})"
+      reply_notfound: "In reply to... a message that I can't find. Weird :thinking:"
+
+    edit:
+      success: "Modification successfully done"

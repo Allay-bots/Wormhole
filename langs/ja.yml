@@ -5,31 +5,40 @@
 
 ja:
   wormhole:
-    view:
-      select-wormhole: "ワームホールを選択してください"
-    list:
-      user: "アクセスできるすべてのワームホールは次のとおりです。"
-      guild: "このサーバーに接続されているすべてのワームホールはこちらです"
-    error:
-      already-exists: "名前が%{name}のワームホールはすでに存在します"
-      already-linked: "チャンネル%{c}はすでにこのワームホールにリンクされています"
-      not-exists: "ワームホール%{name}は存在しません"
-      not-linked: "チャンネル%{c}はどのワームホールにもリンクされていません"
+
+    generic:
+      not-exist: "このワームホールは存在しません"
       not-admin: "このワームホールの管理者である必要があります 🛑"
-      not-privacy: "プライバシーオプションは「public」または「private」である必要があります"
-      already-admin: "%{user}は既に管理者です"
-      notadmin: "%{user}は管理者ではありません"
-      no-wormhole: "まだワームホールを持っていません..."
-      no-channel: "現在はリンクされているチャンネルがありません。%{p}wormhole linkでリンクしてください"
-      too-many-wormholes: "待ってください、すでに5つのワームホールを持っています 🤯\nそれは十分でしょう..."
-      target-has-too-many-wormholes: "申し訳ありませんが、%{user}はすでに5つのワームホールを持っています..."
-    success:
-      wormhole-created: "ワームホールが正常に作成されました！ 🌀\n次のステップ：`/wormhole-link`を使用してチャンネルに接続します"
-      channel-linked: "チャンネルが正常にリンクされました"
-      wormhole-deleted: "ワームホールが正常に削除されました"
-      channel-unlinked: "チャンネルが正常にリンク解除されました"
-      modified: "変更が正常に行われました"
-      admin-added: "%{user}は今、ワームホール「%{wormhole}」の管理者です"
-      admin-removed: "管理者が正常に削除されました"
-    reply_to: "[このメッセージへの返信](%{link})"
-    reply_notfound: "返信元... 編集または削除されたメッセージへの返信です。"
+
+    admin:
+      invalid-action: "無効なアクション..."
+      add:
+        target-is-already-admin: "%{user}はすでに「%{wormhole}」の管理者ですので、完了と考えてください！ :innocent:"
+        target-has-too-many-wormholes: "申し訳ありませんが、%{user}はすでに5つのワームホールを持っています :/"
+        success: "了解！%{user}は今や「%{wormhole}」の管理者です"
+      remove:
+        target-is-not-admin: "%{user}は%{wormhole}の管理者ではありませんので、完了と考えてください！ :innocent:"
+        success: "了解、%{user}はもはや「%{wormhole}」の管理者ではありません"
+
+    link:
+      add:
+        already-linked: "%{channel}はすでに「%{wormhole}」にリンクしています"
+        success: "%{channel}は今や「%{wormhole}」にリンクされています！"
+      remove:
+        channel-have-no-link: "%{channel}はどのワームホールにもリンクされていません"
+        success: "\"%{wormhole}\"は%{channel}から正常にリンクが解除されました"
+
+    list:
+      invalid-predicate: "無効な「which」の値です。提案されたオプションから選んでください。 (私は人間ではないことを知っていますか？実際、あなたが書いたことはあまり理解していません... まだ ^^')"
+      user: "こちらはあなたがアクセスできるすべてのワームホールです："
+      channel: "このチャンネルにリンクされたすべてのワームホールはこちらです："
+      guild: "このサーバーのどこかにリンクされたすべてのワームホールはこちらです："
+      user-have-no-wormhole: "まだワームホールを持っていません。 `/wormhole add` コマンドで作成できます！"
+      channel-have-no-wormhole: "このチャンネルはまだワームホールにリンクされていません。 `/wormhole add` コマンドで作成できます！"
+      guild-have-no-wormhole: "このサーバーにはまだワームホールリンクがありません。 `/wormhole add` コマンドで作成できます！"
+      
+    open:
+      reach-limit: "待ってください、もう既に5つのオープンワームホールがあります 🤯\nそれで十分です..."
+      success: "ワームホールが開かれました！ 🌀\n次のステップ：`/wormhole link` コマンドを使用してチャンネルに接続してください"
+
+   
