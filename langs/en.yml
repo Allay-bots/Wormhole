@@ -21,11 +21,12 @@ en:
         success: "Ok, %{user} is no more an admin of \"%{wormhole}\""
 
     link:
+      missing-permission: "Sorry, you need to have both reading and managing messages permission to link or unlink a wormhol to a channel :/"
       add:
         already-linked: "%{channel} is already linked to \"%{wormhole}\""
         success: "%{channel} is now linked to \"%{wormhole}\"!"
       remove:
-        channel-have-no-link: "%{channel} is not linked to any wormhole"
+        not-linked: "%{channel} is not linked to this wormhole."
         success: "\"%{wormhole}\" has been successfully unlinked from %{channel}"
 
     list:
@@ -50,3 +51,6 @@ en:
 
     edit:
       success: "Modification successfully done"
+
+    webhook:
+      missing-permission: "I don't have the permission to create a webhook, but I need it to take the appearence of the users..."

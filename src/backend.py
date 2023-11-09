@@ -33,8 +33,13 @@ class Wormhole:
 
     # Get wormholes linked to a specific channel
     @staticmethod
-    def get_linked_to(channel:discord.abc.GuildChannel) -> list["Wormhole"]:
-        return [Wormhole(**data) for data in allay.Database.query(f"SELECT * FROM wormholes WHERE id IN (SELECT wormhole_id FROM wormhole_links WHERE channel_id = {channel.id})")]
+    def get_linked_to(channel:discord.abc.GuildChannel, filter_can_read=False, filter_can_write=False) -> list["Wormhole"]:
+
+        filters = " AND can_read = true" if filter_can_read else ""
+        filters += " AND can_write = true" if filter_can_write else ""
+
+        return [Wormhole(**data) for data in allay.Database.query(f"SELECT * FROM wormholes WHERE id IN (SELECT wormhole_id FROM wormhole_links WHERE channel_id = {channel.id}{filters})")]
+
 
     # Get wormholes linked somewhere in the guild
     @staticmethod
@@ -55,8 +60,20 @@ class Wormhole:
     #==========================================================================
 
     @property
-    def connected_channels_id(self) -> list[int]:
+    def links(self) -> list["WormholeLink"]:
+        return WormholeLink.get_from(self)
+
+    @property
+    def linked_channels_id(self) -> list[int]:
         return [int(link['channel_id']) for link in allay.Database.query(f"SELECT channel_id FROM wormhole_links WHERE wormhole_id={self.id}")]
+    
+    @property
+    def reading_channels_id(self):
+        return [int(link['channel_id']) for link in allay.Database.query(f"SELECT channel_id FROM wormhole_links WHERE wormhole_id={self.id} AND can_read=true")]
+    
+    @property
+    def writing_channels_id(self):
+        return [int(link['channel_id']) for link in allay.Database.query(f"SELECT channel_id FROM wormhole_links WHERE wormhole_id={self.id} AND can_write=true")]
     
     @staticmethod
     def set(wormholes:list["Wormhole"]) -> list["Wormhole"]:
@@ -80,7 +97,6 @@ class Wormhole:
 
 class WormholeLink:
     def __init__(self, wormhole_id:int|Wormhole, channel_id:int|discord.abc.GuildChannel, can_read:bool, can_write:bool, webhook_name:str=None, webhook_avatar:str=None):
-        self.cid = int(id)
         self.wormhole_id = wormhole_id.id if isinstance(wormhole_id, Wormhole) else int(wormhole_id)
         self.channel_id = channel_id.id if isinstance(channel_id, discord.abc.GuildChannel) else int(channel_id)
         self.can_read = bool(can_read)
@@ -91,6 +107,10 @@ class WormholeLink:
     #==========================================================================
     # Database Getters
     #==========================================================================
+
+    @staticmethod
+    def get_from(wormhole:Wormhole) -> list["WormholeLink"]:
+        return [WormholeLink(**data) for data in allay.Database.query(f"SELECT * FROM wormhole_links WHERE wormhole_id={wormhole.id}")]
 
     #==========================================================================
     # Database Setters
@@ -103,6 +123,14 @@ class WormholeLink:
         if isinstance(channel, discord.abc.GuildChannel):
             channel = channel.id
         allay.Database.query("INSERT INTO wormhole_links (wormhole_id, channel_id, can_read, can_write) VALUES (?,?,?,?)", (wormhole, channel, read, write))
+
+    @staticmethod
+    def remove(wormhole:int|Wormhole, channel:int|discord.abc.GuildChannel):
+        if isinstance(wormhole, Wormhole):
+            wormhole = wormhole.id
+        if isinstance(channel, discord.abc.GuildChannel):
+            channel = channel.id
+        allay.Database.query(f"DELETE FROM wormhole_links WHERE wormhole_id={wormhole} AND channel_id={channel}")
 
 class WormholeAdmin:
 
@@ -140,31 +168,3 @@ class WormholeAdmin:
 
     def __repr__(self):
         return f"<WormholeAdmin user_id:{self.user_id} wormhole_id:{self.wormhole_id}>"
-
-class WormholeWebhook:
-    def __init__(self, id:int|discord.Webhook, token:str, channel_id:int|discord.abc.GuildChannel):
-        self.id = id.id if isinstance(id, discord.Webhook) else int(id)
-        self.token = str(token)
-        self.channel_id = channel_id.id if isinstance(channel_id, discord.abc.GuildChannel) else int(channel_id)
-
-    # Get webhook if exist or create one --------------------------------------
-
-    @staticmethod
-    async def get_in(channel) -> Optional[discord.Webhook]:
-        
-        webhook = allay.Database.query(f"SELECT * FROM wormhole_webhooks WHERE channel_id={channel.id}")
-
-        if len(webhook) > 1:
-            logs.error(f"Channel {channel.name} ({channel.id}) have more than one wormhole webhook: {', '.join(w['id'] for w in webhook)}")
-
-        if webhook:
-            for w in await channel.guild.webhooks():
-                if w.id == webhook[0]['id']:
-                    webhook = w
-                    break
-        else:
-            # TODO: Check if the bot have the permission to create a webhook
-            webhook = await channel.create_webhook(name="Allay Wormhole")
-            allay.Database.query(f"INSERT INTO wormhole_webhooks (id, token, channel_id) VALUES (?,?,?)",(webhook.id, webhook.token, channel.id))
-
-        return webhook

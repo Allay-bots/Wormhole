@@ -50,7 +50,7 @@ class WormholeCog(commands.Cog):
         return possible_choices
 
     # Admin action selector
-    async def admin_action_atuocomplete(self, interaction, current:str):
+    async def action_autocomplete(self, interaction, current:str):
         possible_choices = []
         for action in ["add", "remove"]:
             if current.lower() in action.lower():
@@ -72,9 +72,10 @@ class WormholeCog(commands.Cog):
         for wormhole in wormholes:
             admins = WormholeAdmin.get_from(wormhole)
             admin_names = ", ".join([self.bot.get_user(admin.user_id).mention for admin in admins])
+            channels = ", ".join([self.bot.get_channel(link.channel_id).mention + " 👀" if link.can_read else "" + " ✍️" if link.can_write else "" for link in wormhole.links])
 
             # Create embed
-            embed = discord.Embed(title=wormhole.name, description=f"Admins: {admin_names}")
+            embed = discord.Embed(title=wormhole.name, description=f"Channels: {channels}\nAdmins: {admin_names}")
             sync_threads = "✅ Sync threads" if wormhole.sync_threads else "❌ Doesn't sync threads"
             embed.set_footer(text=f"Id: {wormhole.id} - {sync_threads}")
 
@@ -153,8 +154,8 @@ class WormholeCog(commands.Cog):
     # Link --------------------------------------------------------------------
 
     @wormhole.command(name="link", description="Link a channel to a wormhole")
-    @discord.app_commands.autocomplete(wormhole=wormhole_autocomplete)
-    async def link(self, interaction, wormhole:int, read:bool=True, write:bool=False, channel:discord.abc.GuildChannel=None):
+    @discord.app_commands.autocomplete(wormhole=wormhole_autocomplete, action=action_autocomplete)
+    async def link(self, interaction, action:str, wormhole:int, read:bool=True, write:bool=True, channel:discord.abc.GuildChannel=None):
 
         if channel is None:
             channel = interaction.channel
@@ -168,23 +169,42 @@ class WormholeCog(commands.Cog):
             await interaction.response.send_message(allay.I18N.tr(interaction, "wormhole.generic.not-admin"))
             return
         
-        # Check if the channel is already linked to the wormhole
-        if channel.id in wormhole.connected_channels_id:
-            await interaction.response.send_message(allay.I18N.tr(interaction, "wormhole.link.add.already-linked", channel=channel.mention, wormhole=wormhole.name))
-            return
+        # Check if the user has the required permissions
+        if not channel.permissions_for(interaction.user).manage_messages or not channel.permissions_for(interaction.user).read_messages:
+                await interaction.response.send_message(allay.I18N.tr(interaction, "wormhole.link.missing-permissions", channel=channel.mention))
+                return
         
-        # TODO: Check if the user can see & manage messages in the channel
+        if action == "add":
 
-        # Create the link
-        WormholeLink.add(wormhole, channel.id, read, write)
+            # Check if the channel is already linked to the wormhole
+            if channel.id in wormhole.linked_channels_id:
+                await interaction.response.send_message(allay.I18N.tr(interaction, "wormhole.link.add.already-linked", channel=channel.mention, wormhole=wormhole.name))
+                return
+        
+            # Create the link
+            WormholeLink.add(wormhole, channel.id, read, write)  
 
-        # Confirm the addition
-        await interaction.response.send_message(allay.I18N.tr(interaction, "wormhole.link.add.success", channel=channel.mention, wormhole=wormhole.name))
+            # Confirm the addition
+            await interaction.response.send_message(allay.I18N.tr(interaction, "wormhole.link.add.success", channel=channel.mention, wormhole=wormhole.name))
+            
+            
+        if action == "remove":
+            
+            # Check if the channel is not linked to the wormhole
+            if channel.id not in wormhole.linked_channels_id:
+                await interaction.response.send_message(allay.I18N.tr(interaction, "wormhole.link.remove.not-linked", channel=channel.mention, wormhole=wormhole.name))
+                return
+            
+            # Remove the link
+            WormholeLink.remove(wormhole, channel.id)
+
+            # Confirm the removal
+            await interaction.response.send_message(allay.I18N.tr(interaction, "wormhole.link.remove.success", channel=channel.mention, wormhole=wormhole.name))
     
     # Add admin ---------------------------------------------------------------
 
     @wormhole.command(name="admin", description="Add an admin to a wormhole")
-    @discord.app_commands.autocomplete(wormhole=wormhole_autocomplete, action=admin_action_atuocomplete)
+    @discord.app_commands.autocomplete(wormhole=wormhole_autocomplete, action=action_autocomplete)
     async def add_admin(self, interaction, action:str, user:discord.User, wormhole:int):
 
         wormhole = Wormhole.get_by_id(wormhole)
@@ -236,3 +256,81 @@ class WormholeCog(commands.Cog):
             # Apply
             WormholeAdmin.remove(wormhole, user)
             await interaction.response.send_message(allay.I18N.tr(interaction, "wormhole.admin.remove.success", user=user.mention, wormhole=wormhole.name))
+
+    #==========================================================================
+    # Events
+    #==========================================================================
+
+    # On message --------------------------------------------------------------
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+
+        # Check if the message is in a wormhole channel
+        wormholes = Wormhole.get_linked_to(message.channel, filter_can_write=True)
+        if len(wormholes) == 0:
+            return
+        
+        webhook = await WormholeWebhook.get_in(message.channel)
+
+        # Check if the message is from the wormhole webhook
+        if message.author.id == webhook.id:
+            return
+        
+        # Send the message to all linked channels
+        for wormhole in wormholes:
+            for link in wormhole.links:
+
+                # Remove channels that can't read the new messages
+                if not link.can_read:
+                    continue
+
+                # Remove the channel where the message was sent
+                if link.channel_id == message.channel.id:
+                    continue
+
+                
+                channel = self.bot.get_channel(link.channel_id)
+                
+                if channel is None:
+                    WormholeLink.remove(wormhole, link.channel_id)
+                    continue
+
+                webhook = await WormholeWebhook.get_in(channel)
+
+                await webhook.send(message.content, username=message.author.display_name, avatar_url=message.author.avatar.url, allowed_mentions=discord.AllowedMentions.none(), files=[await attachment.to_file() for attachment in message.attachments], embeds=message.embeds)
+
+class WormholeWebhook:
+    def __init__(self, id:int|discord.Webhook, token:str, channel_id:int|discord.abc.GuildChannel):
+        self.id = id.id if isinstance(id, discord.Webhook) else int(id)
+        self.token = str(token)
+        self.channel_id = channel_id.id if isinstance(channel_id, discord.abc.GuildChannel) else int(channel_id)
+
+    # Get webhook if exist or create one --------------------------------------
+
+    @staticmethod
+    async def get_in(channel) -> Optional[discord.Webhook]:
+        
+        webhook = allay.Database.query(f"SELECT * FROM wormhole_webhooks WHERE channel_id={channel.id}")
+
+        if len(webhook) > 1:
+            logs.error(f"Channel {channel.name} ({channel.id}) have more than one wormhole webhook: {', '.join(w['id'] for w in webhook)}")
+
+        if webhook:
+            for w in await channel.guild.webhooks():
+                if w.id == webhook[0]['id']:
+                    webhook = w
+                    break
+        else:
+            
+            if not channel.permissions_for(channel.guild.me).manage_webhooks:
+                try:
+                    channel.send(allay.I18N.tr(channel, "wormhole.webhook.missing-permissions"))
+                except discord.Forbidden:
+                    logs.warning(f"Wormhole > Missing permissions to send message in {channel.name} ({channel.id}) of guild {channel.guild.name} ({channel.guild.id})")
+                return None
+
+            webhook = await channel.create_webhook(name="Allay Wormhole")
+            allay.Database.query(f"INSERT INTO wormhole_webhooks (id, token, channel_id) VALUES (?,?,?)",(webhook.id, webhook.token, channel.id))
+
+        return webhook
