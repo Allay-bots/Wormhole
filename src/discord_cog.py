@@ -289,16 +289,61 @@ class WormholeCog(commands.Cog):
                 if link.channel_id == message.channel.id:
                     continue
 
-                
                 channel = self.bot.get_channel(link.channel_id)
                 
                 if channel is None:
                     WormholeLink.remove(wormhole, link.channel_id)
                     continue
 
+                # Get the webhook
                 webhook = await WormholeWebhook.get_in(channel)
 
-                await webhook.send(message.content, username=message.author.display_name, avatar_url=message.author.avatar.url, allowed_mentions=discord.AllowedMentions.none(), files=[await attachment.to_file() for attachment in message.attachments], embeds=message.embeds)
+                # Composing the miror message content
+                content = message.content
+
+                def crop_reference_content(content):
+                    if content.startswith("**╭┄** 💬 [**"):
+                        content = "\n".join(content.split("\n")[1:])
+                    if len(content) > 1000:
+                        content = content[:1000]
+                    return content
+
+                def reference_match(content1:str, content2:str) -> str:
+                    return crop_reference_content(content1) == crop_reference_content(content2)
+            
+                # Get the reference in the destination channel
+                async def get_miror_reference(channel: discord.abc.Messageable, message: discord.Message) -> discord.Message:
+                    date = message.created_at
+
+                    async for msg in channel.history(limit=10, after=date, oldest_first=True):
+                        if reference_match(msg.content, message.content):
+                            return msg
+                    async for msg in channel.history(limit=10, before=date, oldest_first=False):
+                        if reference_match(msg.content, message.content):
+                            return msg
+                    return None
+
+                # Include the start of the message that was answered
+                if message.reference is not None:
+                    reference = await message.channel.fetch_message(message.reference.message_id)
+                    if reference is not None:
+                        miror_reference = await get_miror_reference(channel, reference)
+                        if miror_reference is None:
+                            miror_reference = reference
+
+                        reference_content = crop_reference_content(miror_reference.content)
+                        if len(reference_content) > 50:
+                            reference_content = reference_content[:47] + "..."
+
+                        content = f"**╭┄** 💬 [**{reference.author.display_name}**](<{miror_reference.jump_url}>) : {reference_content}\n" + message.content
+                
+                # Limit the message length
+                if len(content) > 2000:
+                    trunc = f" [[...]](<{message.jump_url}>)"
+                    content = content[:2000-len(trunc)] + trunc
+
+                # Send the miror message
+                await webhook.send(content, username=message.author.display_name, avatar_url=message.author.avatar.url, allowed_mentions=discord.AllowedMentions.none(), files=[await attachment.to_file() for attachment in message.attachments], embeds=message.embeds)
 
 class WormholeWebhook:
     def __init__(self, id:int|discord.Webhook, token:str, channel_id:int|discord.abc.GuildChannel):

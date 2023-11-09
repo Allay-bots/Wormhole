@@ -43,9 +43,5 @@ fr:
     close:
       success: "\"%{wormhole}\" a été fermé !"
 
-    message:
-      reply_to: "En réponse à [ce message](%{link})"
-      reply_notfound: "En réponse à... un message que je ne peux pas trouver. Étrange :thinking:"
-
     edit:
       success: "Modification effectuée avec succès"

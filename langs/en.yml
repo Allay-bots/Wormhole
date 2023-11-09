@@ -45,10 +45,6 @@ en:
     close:
       success: "\"%{wormhole}\" has been closed!"
 
-    message:
-      reply_to: "In reply to [this message](%{link})"
-      reply_notfound: "In reply to... a message that I can't find. Weird :thinking:"
-
     edit:
       success: "Modification successfully done"
 
