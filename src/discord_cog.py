@@ -7,6 +7,7 @@
 import difflib
 from typing import Optional, Union
 from aiohttp import ClientSession
+import asyncio
 
 # Third party libs ------------------------------------------------------------
 
@@ -19,6 +20,7 @@ from LRFutils import logs
 import allay
 from .wormhole_selector import WormholeSelectorView
 from .backend import Wormhole, WormholeLink, WormholeAdmin
+from . import discord_utils
 
 #==============================================================================
 # Plugin
@@ -266,16 +268,28 @@ class WormholeCog(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
 
+        print("\n----------\n")
+        logs.info(f"New message detected!")
+
+        logs.info(f"Getting wormholes...")
+
         # Check if the message is in a wormhole channel
         wormholes = Wormhole.get_linked_to(message.channel, filter_can_write=True)
         if len(wormholes) == 0:
+            logs.info(f"Message is not in a wormhole channel ⛔")
             return
         
-        webhook = await WormholeWebhook.get_in(message.channel)
+        logs.info("Wormhole found ✅")
+        logs.info("Getting associated webhook...")
+
+        webhook = await discord_utils.WormholeWebhook.get_in(message.channel)
 
         # Check if the message is from the wormhole webhook
         if message.author.id == webhook.id:
+            logs.info(f"Message is from the wormhole webhook ⛔")
             return
+        
+        logs.info(f"Message come from a human ✅")
         
         # Send the message to all linked channels
         for wormhole in wormholes:
@@ -288,94 +302,68 @@ class WormholeCog(commands.Cog):
                 # Remove the channel where the message was sent
                 if link.channel_id == message.channel.id:
                     continue
-
-                channel = self.bot.get_channel(link.channel_id)
                 
-                if channel is None:
-                    WormholeLink.remove(wormhole, link.channel_id)
+                # If the channel is no longer accessible (or was deleted), remove the link
+                destination_channel = self.bot.get_channel(link.channel_id)
+                if destination_channel is None:
+                    link.remove()
                     continue
 
-                # Get the webhook
-                webhook = await WormholeWebhook.get_in(channel)
-
-                # Composing the miror message content
-                content = message.content
-
-                def crop_reference_content(content):
-                    if content.startswith("**╭┄** 💬 [**"):
-                        content = "\n".join(content.split("\n")[1:])
-                    if len(content) > 1000:
-                        content = content[:1000]
-                    return content
-
-                def reference_match(content1:str, content2:str) -> str:
-                    return crop_reference_content(content1) == crop_reference_content(content2)
-            
-                # Get the reference in the destination channel
-                async def get_miror_reference(channel: discord.abc.Messageable, message: discord.Message) -> discord.Message:
-                    date = message.created_at
-
-                    async for msg in channel.history(limit=10, after=date, oldest_first=True):
-                        if reference_match(msg.content, message.content):
-                            return msg
-                    async for msg in channel.history(limit=10, before=date, oldest_first=False):
-                        if reference_match(msg.content, message.content):
-                            return msg
-                    return None
-
-                # Include the start of the message that was answered
-                if message.reference is not None:
-                    reference = await message.channel.fetch_message(message.reference.message_id)
-                    if reference is not None:
-                        miror_reference = await get_miror_reference(channel, reference)
-                        if miror_reference is None:
-                            miror_reference = reference
-
-                        reference_content = crop_reference_content(miror_reference.content)
-                        if len(reference_content) > 50:
-                            reference_content = reference_content[:47] + "..."
-
-                        content = f"**╭┄** 💬 [**{reference.author.display_name}**](<{miror_reference.jump_url}>) : {reference_content}\n" + message.content
-                
-                # Limit the message length
-                if len(content) > 2000:
-                    trunc = f" [[...]](<{message.jump_url}>)"
-                    content = content[:2000-len(trunc)] + trunc
-
                 # Send the miror message
+                webhook = await discord_utils.WormholeWebhook.get_in(destination_channel)
+                content = await discord_utils.WormholeMessage.compose_miror_content(message, channel=destination_channel)
                 await webhook.send(content, username=message.author.display_name, avatar_url=message.author.avatar.url, allowed_mentions=discord.AllowedMentions.none(), files=[await attachment.to_file() for attachment in message.attachments], embeds=message.embeds)
 
-class WormholeWebhook:
-    def __init__(self, id:int|discord.Webhook, token:str, channel_id:int|discord.abc.GuildChannel):
-        self.id = id.id if isinstance(id, discord.Webhook) else int(id)
-        self.token = str(token)
-        self.channel_id = channel_id.id if isinstance(channel_id, discord.abc.GuildChannel) else int(channel_id)
+    # On message deleted ----------------------------------------------------------
 
-    # Get webhook if exist or create one --------------------------------------
+    supression_cache = []
 
-    @staticmethod
-    async def get_in(channel) -> Optional[discord.Webhook]:
-        
-        webhook = allay.Database.query(f"SELECT * FROM wormhole_webhooks WHERE channel_id={channel.id}")
-
-        if len(webhook) > 1:
-            logs.error(f"Channel {channel.name} ({channel.id}) have more than one wormhole webhook: {', '.join(w['id'] for w in webhook)}")
-
-        if webhook:
-            for w in await channel.guild.webhooks():
-                if w.id == webhook[0]['id']:
-                    webhook = w
-                    break
-        else:
+    @commands.Cog.listener()
+    async def on_message_delete(self, message: discord.Message):
             
-            if not channel.permissions_for(channel.guild.me).manage_webhooks:
-                try:
-                    channel.send(allay.I18N.tr(channel, "wormhole.webhook.missing-permissions"))
-                except discord.Forbidden:
-                    logs.warning(f"Wormhole > Missing permissions to send message in {channel.name} ({channel.id}) of guild {channel.guild.name} ({channel.guild.id})")
-                return None
+            print("Message deleted\n", message.content)
+            
+            # Check if the message is in a wormhole channel
+            wormholes = Wormhole.get_linked_to(message.channel, filter_can_write=True)
+            if len(wormholes) == 0:
+                return
+            
+            # If the message is already in supression process, then ignore it
+            message_hash = await discord_utils.WormholeMessage.get_hash(message) 
+            if message_hash in WormholeCog.supression_cache:
+                logs.info("Message is already in supression process ⛔")
+                return
+            
+            # Add the message to the supression cache
+            WormholeCog.supression_cache.append(message_hash)
+            
+            for wormhole in wormholes:
+                for link in wormhole.links:
+                    
+                    # Ignore channels that can't see the wormhole activity
+                    if not link.can_read:
+                        continue
+                    
+                    # If the channel is no longer accessible (or was deleted), remove the link
+                    destination_channel = self.bot.get_channel(link.channel_id)
+                    if destination_channel is None:
+                        link.remove()
+                        continue
 
-            webhook = await channel.create_webhook(name="Allay Wormhole")
-            allay.Database.query(f"INSERT INTO wormhole_webhooks (id, token, channel_id) VALUES (?,?,?)",(webhook.id, webhook.token, channel.id))
+                    # Ignore the channel where the message was deleted
+                    if destination_channel.id == message.channel.id:
+                        continue
+                    
+                    # Get the miror message
+                    miror_message = await discord_utils.WormholeMessage.get_miror_in(message, channel=destination_channel)
+                    
+                    # If the miror message is not accessible, then ignore it
+                    if miror_message is None:
+                        continue
+                    
+                    # Delete the miror message
+                    await miror_message.delete()
+            
+            await asyncio.sleep(5)
+            WormholeCog.supression_cache.remove(message_hash)
 
-        return webhook
