@@ -8,11 +8,26 @@ class WormholeSelector(discord.ui.Select):
         self.wormholes_id = sorted(wormholes_id)
 
         options = []
-        for wh in allay.Database.query("SELECT * FROM wormholes ORDER BY id ASC"):
+        for wh in allay.Database.query(
+                "SELECT * FROM wormholes ORDER BY id ASC"
+            ):
             if wh['id'] in self.wormholes_id:
-                options.append(discord.SelectOption(label=wh['name'], value=str(wh['id'])))
+                options.append(
+                    discord.SelectOption(
+                        label=wh['name'],
+                        value=str(wh['id'])
+                    )
+                )
 
-        super().__init__(placeholder=allay.I18N.tr(locale,"wormhole.view.select-wormhole"), min_values=1, max_values=1, options=options)
+        super().__init__(
+            placeholder=allay.I18N.tr(
+                locale,
+                "wormhole.view.select-wormhole"
+            ),
+            min_values=1,
+            max_values=1,
+            options=options
+        )
 
     async def callback(self, interaction: discord.Interaction):
         self.interaction = interaction
