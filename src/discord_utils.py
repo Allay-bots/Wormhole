@@ -7,7 +7,7 @@ import allay
 # Webhook
 #==============================================================================
 
-class WormholeWebhook:
+class WhWebhook:
 
     def __init__(
             self,
@@ -86,7 +86,7 @@ class WormholeWebhook:
     @staticmethod
     def all():
         return [
-            WormholeWebhook(**data)
+            WhWebhook(**data)
             for data in allay.Database.query(
                 f"SELECT * FROM wormhole_webhooks"
             )
@@ -96,7 +96,7 @@ class WormholeWebhook:
 # Message
 #==============================================================================
 
-class WormholeMessage():
+class WhMessage():
 
     reference_prefix = "**╭** 💬 [**"
     trunc_prefix = "[...](<https://discord.com/channels/"
@@ -105,13 +105,13 @@ class WormholeMessage():
     async def get_hash(message):
         
         # Check if it is an original message -> keep the content
-        webhook = await WormholeWebhook.get_in(message.channel)
+        webhook = await WhWebhook.get_in(message.channel)
         if message.author.id != webhook.id:
             content = message.content
             logs.info(f"Get original message: {content}")
         # Or a miror message -> extract the content
         else:
-            content = WormholeMessage.extract_content_from_miror(
+            content = WhMessage.extract_content_from_miror(
                 message.content
             )
             logs.info(f"Get miror message: {content}")
@@ -119,11 +119,11 @@ class WormholeMessage():
 
     async def get_reference(message):
         # Check if it is an original message -> keep the content
-        if message.author.id != await WormholeWebhook.get_in(message.channel):
+        if message.author.id != await WhWebhook.get_in(message.channel):
             return message.reference
         # Or a miror message -> extract the content
         else:
-            return WormholeMessage.extract_reference_from_miror(
+            return WhMessage.extract_reference_from_miror(
                 message.content
             )
 
@@ -144,7 +144,7 @@ class WormholeMessage():
                 after=date,
                 oldest_first=True
             ):
-            if await WormholeMessage.equal(message, msg):
+            if await WhMessage.equal(message, msg):
                 logs.info(f"Found miror message ✅")
                 return msg
         logs.info(
@@ -156,7 +156,7 @@ class WormholeMessage():
                 before=date,
                 oldest_first=False
             ):
-            if await WormholeMessage.equal(message, msg):
+            if await WhMessage.equal(message, msg):
                 logs.info(f"Found miror message ✅")
                 return msg
         return None
@@ -164,8 +164,8 @@ class WormholeMessage():
     # Compare two wormhole messages -------------------------------------------
 
     async def equal(msg1:discord.Message, msg2:discord.Message) -> bool:
-        c1 = await WormholeMessage.get_hash(msg1) 
-        c2 = await WormholeMessage.get_hash(msg2)
+        c1 = await WhMessage.get_hash(msg1) 
+        c2 = await WhMessage.get_hash(msg2)
         logs.info(f"Comparing\n{c1.__repr__()}\nand\n{c2.__repr__()}")
         return c1 == c2
     
@@ -176,7 +176,7 @@ class WormholeMessage():
             channel:discord.abc.GuildChannel=None
         ) -> str:
 
-        reference = await WormholeMessage.get_reference(message)
+        reference = await WhMessage.get_reference(message)
 
         # Include the reference preview
         if reference is not None:
@@ -196,7 +196,7 @@ class WormholeMessage():
                 logs.info("Getting the miror one...")   
                 
                 # Get miror reference
-                miror_reference_message = await WormholeMessage.get_miror_in(
+                miror_reference_message = await WhMessage.get_miror_in(
                     reference_message, channel
                 )
 
@@ -218,12 +218,12 @@ class WormholeMessage():
 
                 # Add the croped reference to the miror message
                 reference_preview = (
-                    WormholeMessage.reference_prefix
+                    WhMessage.reference_prefix
                     + reference_message.author.display_name
                     + "**](<"
                     + miror_reference_message.jump_url
                     + ">) : "
-                    + await WormholeMessage.get_hash(miror_reference_message)
+                    + await WhMessage.get_hash(miror_reference_message)
                     + "\n"
                 )
 
@@ -259,20 +259,20 @@ class WormholeMessage():
         ) -> str:
         logs.info("Start composing miror message...")
 
-        ref = await WormholeMessage.compose_reference_preview(message, channel)
-        content = await WormholeMessage.truncated_content(message, channel)
+        ref = await WhMessage.compose_reference_preview(message, channel)
+        content = await WhMessage.truncated_content(message, channel)
         return ref + content
 
     @staticmethod
     def extract_content_from_miror(content):
         # Remove reference preview
-        if content.startswith(WormholeMessage.reference_prefix):
+        if content.startswith(WhMessage.reference_prefix):
             content = "\n".join(content.split("\n")[1:])
         # Remove truncation info
         if content.endswith(">)"):
-            splitted_content = content.split(WormholeMessage.trunc_prefix)
+            splitted_content = content.split(WhMessage.trunc_prefix)
             if len(splitted_content) > 1:
-                content = WormholeMessage.trunc_prefix.join(
+                content = WhMessage.trunc_prefix.join(
                     splitted_content[:-1]
                 )
         return content
@@ -282,7 +282,7 @@ class WormholeMessage():
             content:str
         ) -> Optional[discord.MessageReference]:
 
-        if content.startswith(WormholeMessage.reference_prefix):
+        if content.startswith(WhMessage.reference_prefix):
             ref = content.split("\n")[0]
             ref = ref.split("](<")[1]
             ref = ref.split(">)")[0]

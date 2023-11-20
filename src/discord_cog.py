@@ -18,14 +18,14 @@ from LRFutils import logs
 
 import allay
 from .wormhole_selector import WormholeSelectorView
-from .backend import Wormhole, WormholeLink, WormholeAdmin
+from .backend import Wormhole, WhLink, WhAdmin
 from . import discord_utils
 
 #==============================================================================
 # Plugin
 #==============================================================================
 
-class WormholeCog(commands.Cog):
+class WhCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -152,7 +152,7 @@ class WormholeCog(commands.Cog):
 
         list_embeds = []
         for wormhole in wormholes:
-            admins = WormholeAdmin.get_from(wormhole)
+            admins = WhAdmin.get_from(wormhole)
             admin_names = ", ".join(
                 [self.bot.get_user(admin.user_id).mention for admin in admins]
             )
@@ -216,7 +216,7 @@ class WormholeCog(commands.Cog):
             return
 
         wormhole_id = Wormhole.open(name, sync_threads)
-        WormholeAdmin.add(wormhole_id, interaction.user.id)
+        WhAdmin.add(wormhole_id, interaction.user.id)
 
         await interaction.response.send_message(
             allay.I18N.tr(
@@ -403,7 +403,7 @@ class WormholeCog(commands.Cog):
                 return
         
             # Create the link
-            WormholeLink.add(wormhole, channel.id, read, write)  
+            WhLink.add(wormhole, channel.id, read, write)  
 
             # Confirm the addition
             await interaction.response.send_message(
@@ -431,7 +431,7 @@ class WormholeCog(commands.Cog):
                 return
             
             # Remove the link
-            WormholeLink.remove(wormhole, channel.id)
+            WhLink.remove(wormhole, channel.id)
 
             # Confirm the removal
             await interaction.response.send_message(
@@ -510,7 +510,7 @@ class WormholeCog(commands.Cog):
 
             # Check if the target user is already admin of the wormhole
             if user.id in [
-                    admin.user_id for admin in WormholeAdmin.get_from(wormhole)
+                    admin.user_id for admin in WhAdmin.get_from(wormhole)
                 ]:
                 await interaction.response.send_message(
                     allay.I18N.tr(
@@ -534,7 +534,7 @@ class WormholeCog(commands.Cog):
                 return
             
             # Applye
-            WormholeAdmin.add(wormhole, user)
+            WhAdmin.add(wormhole, user)
             await interaction.response.send_message(
                 allay.I18N.tr(
                     interaction,
@@ -550,7 +550,7 @@ class WormholeCog(commands.Cog):
 
             # Check if the target user is admin of the wormhole
             if user.id not in [
-                    admin.user_id for admin in WormholeAdmin.get_from(wormhole)
+                    admin.user_id for admin in WhAdmin.get_from(wormhole)
                 ]:
                 await interaction.response.send_message(
                     allay.I18N.tr(
@@ -562,7 +562,7 @@ class WormholeCog(commands.Cog):
                 return
 
             # Apply
-            WormholeAdmin.remove(wormhole, user)
+            WhAdmin.remove(wormhole, user)
             await interaction.response.send_message(
                 allay.I18N.tr(
                     interaction,
@@ -605,7 +605,7 @@ class WormholeCog(commands.Cog):
         logs.info("Wormhole found ✅")
         logs.info("Getting associated webhook...")
 
-        webhook = await discord_utils.WormholeWebhook.get_in(message.channel)
+        webhook = await discord_utils.WhWebhook.get_in(message.channel)
 
         # Check if the message is from the wormhole webhook
         if message.author.id == webhook.id:
@@ -634,10 +634,10 @@ class WormholeCog(commands.Cog):
                     continue
 
                 # Send the miror message
-                webhook = await discord_utils.WormholeWebhook.get_in(
+                webhook = await discord_utils.WhWebhook.get_in(
                     destination_channel
                 )
-                content = await discord_utils.WormholeMessage\
+                content = await discord_utils.WhMessage\
                 .compose_miror_content(
                     message,
                     channel=destination_channel
@@ -679,13 +679,13 @@ class WormholeCog(commands.Cog):
             return
         
         # If the message is already in supression process, then ignore it
-        message_hash = await discord_utils.WormholeMessage.get_hash(message) 
-        if message_hash in WormholeCog.supression_cache:
+        message_hash = await discord_utils.WhMessage.get_hash(message) 
+        if message_hash in WhCog.supression_cache:
             logs.info("Message is already in supression process ⛔")
             return
         
         # Add the message to the supression cache
-        WormholeCog.supression_cache.append(message_hash)
+        WhCog.supression_cache.append(message_hash)
         
         for wormhole in wormholes:
             for link in wormhole.links:
@@ -706,7 +706,7 @@ class WormholeCog(commands.Cog):
                     continue
                 
                 # Get the miror message
-                miror_message = await discord_utils.WormholeMessage\
+                miror_message = await discord_utils.WhMessage\
                 .get_miror_in(message, channel=destination_channel)
                 
                 # If the miror message is not accessible, then ignore it
@@ -717,5 +717,5 @@ class WormholeCog(commands.Cog):
                 await miror_message.delete()
         
         await asyncio.sleep(5)
-        WormholeCog.supression_cache.remove(message_hash)
+        WhCog.supression_cache.remove(message_hash)
 

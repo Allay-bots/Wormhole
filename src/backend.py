@@ -87,7 +87,7 @@ class Wormhole:
         --------------------------------------------------------------------"""
 
         wormholes = []
-        for admin in WormholeAdmin.all():
+        for admin in WhAdmin.all():
             if admin.user_id == user.id:
                 wormholes.append(Wormhole.get_by_id(admin.wormhole_id))
 
@@ -117,7 +117,7 @@ class Wormhole:
         --------------------------------------------------------------------"""
 
         wormholes = []
-        for link in WormholeLink.all():
+        for link in WhLink.all():
 
             if link.channel_id != channel.id:
                 continue
@@ -150,7 +150,7 @@ class Wormhole:
         --------------------------------------------------------------------"""
 
         wormholes = []
-        for link in WormholeLink.all():
+        for link in WhLink.all():
             if guild.get_channel(link.channel_id):
                 wormhole = Wormhole.get_by_id(link.wormhole_id)
                 if wormhole:
@@ -163,7 +163,7 @@ class Wormhole:
     #==========================================================================
 
     @property
-    def links(self) -> list["WormholeLink"]:
+    def links(self) -> list["WhLink"]:
         """--------------------------------------------------------------------
         Return a list of all links of the wormhole
         
@@ -172,7 +172,7 @@ class Wormhole:
         - A list of all links of the wormhole
         --------------------------------------------------------------------"""
 
-        return WormholeLink.get_from(self)
+        return WhLink.get_from(self)
 
     @property
     def linked_channels_id(self) -> list[int]:
@@ -248,7 +248,7 @@ class Wormhole:
             + "name:{self.name} "\
             + "sync_threads:{self.sync_threads}>"
 
-class WormholeLink:
+class WhLink:
 
     def __init__(
             self,
@@ -293,7 +293,7 @@ class WormholeLink:
             channel:int|discord.abc.GuildChannel,
             read:bool=True,
             write:bool=False
-        ) -> "WormholeLink":
+        ) -> "WhLink":
         """--------------------------------------------------------------------
         Create a new link between a wormhole and a channel
         
@@ -310,7 +310,7 @@ class WormholeLink:
         --------------------------------------------------------------------"""
 
         # Check if the link already exist
-        for link in WormholeLink.all():
+        for link in WhLink.all():
             if link.wormhole_id == wormhole and link.channel_id == channel:
                 return link
         
@@ -324,8 +324,8 @@ class WormholeLink:
             + "(wormhole_id, channel_id, can_read, can_write) VALUES (?,?,?,?)"
         allay.Database.query(query, (wormhole, channel, read, write))
 
-        link = WormholeLink(wormhole, channel, read, write)
-        WormholeLink.all().append(link)
+        link = WhLink(wormhole, channel, read, write)
+        WhLink.all().append(link)
 
         return link
 
@@ -335,12 +335,12 @@ class WormholeLink:
                 + "wormhole_id={self.wormhole_id} "\
                 + "AND channel_id={self.channel_id}"
             )
-        if self in WormholeLink.all():
-            WormholeLink.all().remove(self)
+        if self in WhLink.all():
+            WhLink.all().remove(self)
         del self
 
     @staticmethod
-    def all() -> list["WormholeLink"]:
+    def all() -> list["WhLink"]:
         """--------------------------------------------------------------------
         Return a list of all links in the database
         
@@ -350,7 +350,7 @@ class WormholeLink:
         --------------------------------------------------------------------"""
 
         return [
-            WormholeLink(**data) for data in allay.Database.query(
+            WhLink(**data) for data in allay.Database.query(
                 f"SELECT * FROM wormhole_links"
             )
         ]
@@ -360,7 +360,7 @@ class WormholeLink:
     #==========================================================================
 
     @staticmethod
-    def get_from(wormhole:Wormhole) -> list["WormholeLink"]:
+    def get_from(wormhole:Wormhole) -> list["WhLink"]:
         """--------------------------------------------------------------------
         Return a list of all links of a wormhole
         
@@ -374,13 +374,13 @@ class WormholeLink:
         --------------------------------------------------------------------"""
 
         links = []
-        for link in WormholeLink.all():
+        for link in WhLink.all():
             if link.wormhole_id == wormhole.id:
                 links.append(link)
 
         return links
 
-class WormholeAdmin:
+class WhAdmin:
 
     def __init__(self, user_id:int|discord.abc.User, wormhole_id:int|Wormhole):
         """--------------------------------------------------------------------
@@ -406,7 +406,7 @@ class WormholeAdmin:
     def add(
             wormhole_id:int|Wormhole,
             user_id:int|discord.abc.User
-        ) -> "WormholeAdmin":
+        ) -> "WhAdmin":
         """--------------------------------------------------------------------
         Create a new wormhole admin (stored in the database)
         
@@ -421,7 +421,7 @@ class WormholeAdmin:
         --------------------------------------------------------------------"""
 
         # Check if the admin already exist
-        for admin in WormholeAdmin.all():
+        for admin in WhAdmin.all():
             if admin.wormhole_id == wormhole_id and admin.user_id == user_id:
                 return admin
         
@@ -435,7 +435,7 @@ class WormholeAdmin:
             + "(wormhole_id, user_id) VALUES (?,?)"
         allay.Database.query(query, (wormhole_id, user_id))
 
-        return WormholeAdmin(user_id, wormhole_id)   
+        return WhAdmin(user_id, wormhole_id)   
     
     @staticmethod
     def all():
@@ -448,7 +448,7 @@ class WormholeAdmin:
         --------------------------------------------------------------------"""
 
         return [
-            WormholeAdmin(**data) for data in allay.Database.query(
+            WhAdmin(**data) for data in allay.Database.query(
                 f"SELECT * FROM wormhole_admins"
             )
         ]
@@ -458,7 +458,7 @@ class WormholeAdmin:
     #==========================================================================
 
     @staticmethod
-    def get_from(wormhole:Wormhole) -> list["WormholeAdmin"]:
+    def get_from(wormhole:Wormhole) -> list["WhAdmin"]:
         """--------------------------------------------------------------------
         Return a list of all admins of a wormhole
         
@@ -472,7 +472,7 @@ class WormholeAdmin:
         --------------------------------------------------------------------"""
 
         admins = []
-        for admin in WormholeAdmin.all():
+        for admin in WhAdmin.all():
             if admin.wormhole_id == wormhole.id:
                 admins.append(admin)
 
@@ -502,6 +502,6 @@ class WormholeAdmin:
         - A string representation of the wormhole admin for debugging purpose
         --------------------------------------------------------------------"""
 
-        return f"<WormholeAdmin "\
+        return f"<WhAdmin "\
             + "user_id:{self.user_id} "\
             + "wormhole_id:{self.wormhole_id}>"
