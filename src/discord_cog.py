@@ -1,3 +1,4 @@
+
 #==============================================================================
 # Requirements
 #==============================================================================
@@ -364,10 +365,9 @@ class WhCog(commands.Cog):
         # Apply routine for a given wormhole ID ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
         # Check if the source user is admin of the wormhole
-        if not Wormhole.is_in(
-                wormhole,
-                Wormhole.get_accessible_by(interaction.user)
-            ):
+        print("link", wormhole)
+        print("link", [id(w) for w in Wormhole.get_accessible_by(interaction.user)])
+        if wormhole not in Wormhole.get_accessible_by(interaction.user):
             await interaction.response.send_message(
                 allay.I18N.tr(
                     interaction,

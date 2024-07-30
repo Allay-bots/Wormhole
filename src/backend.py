@@ -68,6 +68,7 @@ class Wormhole:
 
         for wormhole in Wormhole.all():
             if wormhole.id == id:
+                print("get", id, wormhole)
                 return wormhole
             
         return None
@@ -233,7 +234,7 @@ class Wormhole:
         - A string representation of the wormhole for display purpose
         --------------------------------------------------------------------"""
 
-        return self.name + f" (id:{self.id})"
+        return self.name + f" (id:{self.id}, @{id(self)})"
 
     def __repr__(self) -> str:
         """--------------------------------------------------------------------
@@ -245,8 +246,8 @@ class Wormhole:
         --------------------------------------------------------------------"""
 
         return f"<Wormhole id:{self.id} "\
-            + "name:{self.name} "\
-            + "sync_threads:{self.sync_threads}>"
+            + f"name:{self.name} "\
+            + f"sync_threads:{self.sync_threads}>"
 
 class WhLink:
 
@@ -273,14 +274,14 @@ class WhLink:
         --------------------------------------------------------------------"""
 
         if isinstance(wormhole_id, Wormhole):
-            wormhole_id = wormhole_id.id
+            self.wormhole_id = wormhole_id.id
         else:
-            wormhole_id = int(wormhole_id)
+            self.wormhole_id = int(wormhole_id)
 
         if isinstance(channel_id, discord.abc.GuildChannel):
-            channel_id = channel_id.id
+            self.channel_id = channel_id.id
         else:
-            channel_id = int(channel_id)
+            self.channel_id = int(channel_id)
 
         self.can_read = bool(can_read)
         self.can_write = bool(can_write)
@@ -393,14 +394,14 @@ class WhAdmin:
         --------------------------------------------------------------------"""
 
         if isinstance(wormhole_id, Wormhole):
-            wormhole_id = wormhole_id.id
+            self.wormhole_id = wormhole_id.id
         else:
-            wormhole_id = int(wormhole_id)
+            self.wormhole_id = int(wormhole_id)
 
         if isinstance(user_id, discord.abc.User):
-            user_id = user_id.id
+            self.user_id = user_id.id
         else:
-            user_id = int(user_id)
+            self.user_id = int(user_id)
 
     @staticmethod
     def add(
